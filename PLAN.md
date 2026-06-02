@@ -130,11 +130,12 @@ Confidence: 94/100.
 
 ## Immediate Next Steps
 
-1. Implement `01-core-hcl-local` with local state, variables, locals, outputs,
-   `random_id`, `local_file`, and `terraform_data`.
-2. Add `02-modules-and-composition` after the first lesson is working.
-3. Add Docker and Kubernetes labs only after the Terraform core lessons are clear.
-4. Keep each new lesson documented with commands, expected observations, and
+1. Run `01-core-hcl-local` after Terraform CLI is installed.
+2. Review plan output for local state, variables, locals, outputs, `random_id`,
+   `local_file`, `terraform_data`, `count`, and `for_each`.
+3. Add `02-modules-and-composition` after the first lesson is working.
+4. Add Docker and Kubernetes labs only after the Terraform core lessons are clear.
+5. Keep each new lesson documented with commands, expected observations, and
    production differences.
 
 Confidence: 93/100.

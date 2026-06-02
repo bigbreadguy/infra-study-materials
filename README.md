@@ -5,6 +5,7 @@ Terraform fundamentals safely before practicing real GCP provisioning patterns.
 
 Start with [PLAN.md](./PLAN.md). It defines the workshop sequence, local stack
 options, safety rules, expected repository shape, and next implementation steps.
+The first runnable lesson is [01-core-hcl-local](./01-core-hcl-local/).
 
 Confidence: 96/100.
 
