@@ -1,2 +1,63 @@
+# ---------------------------------------------------------------------------
+# Environment / secrets
+# ---------------------------------------------------------------------------
 *.env
 *.env.local
+
+# GCP service account keys & credentials — NEVER commit these
+*.json.key
+*-key.json
+*-credentials.json
+*-sa.json
+credentials.json
+service-account*.json
+gcp-*.json
+application_default_credentials.json
+
+# ---------------------------------------------------------------------------
+# Terraform
+# ---------------------------------------------------------------------------
+# Local .terraform directories (provider plugins, modules, backend config cache)
+**/.terraform/*
+
+# .tfstate files (may contain secrets; should live in remote backend, not git)
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Saved plan output — can contain sensitive values
+*.tfplan
+*.tfplan.*
+
+# Variable files that commonly hold secrets / per-user values.
+# Keep *.tfvars out of git; commit only example templates.
+*.tfvars
+*.tfvars.json
+!*.example.tfvars
+!example.tfvars
+!terraform.tfvars.example
+
+# Override files — local-only overrides, not meant to be shared
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Lock file: by convention .terraform.lock.hcl IS committed (pins provider
+# versions). Leave it tracked — do NOT ignore it.
+
+# ---------------------------------------------------------------------------
+# Editor / OS noise
+# ---------------------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
