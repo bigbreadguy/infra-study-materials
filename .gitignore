@@ -29,8 +29,13 @@ crash.log
 crash.*.log
 
 # Saved plan output — can contain sensitive values
+tfplan
+tfplan.*
 *.tfplan
 *.tfplan.*
+
+# Local backend config can contain project-specific state bucket names.
+backend.tf
 
 # Variable files that commonly hold secrets / per-user values.
 # Keep *.tfvars out of git; commit only example templates.
