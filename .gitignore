@@ -58,6 +58,15 @@ terraform.rc
 # Lock file: by convention .terraform.lock.hcl IS committed (pins provider
 # versions). Leave it tracked — do NOT ignore it.
 
+# Agent-local session settings. Shared agent instructions should stay tracked in
+# files such as AGENTS.md, but machine/session-local config should not.
+.claude/settings.local.json
+.claude/**/*.local.json
+.codex/settings.local.json
+.codex/**/*.local.json
+.agents/settings.local.json
+.agents/**/*.local.json
+
 # ---------------------------------------------------------------------------
 # Editor / OS noise
 # ---------------------------------------------------------------------------
