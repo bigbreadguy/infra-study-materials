@@ -1,6 +1,7 @@
 output "image_reference" {
   description = "Pinned Docker image reference used by docker_image.web."
   value       = local.image_reference
+  sensitive   = true
 }
 
 output "stack_names" {
@@ -19,6 +20,7 @@ output "published_urls" {
     "http://${port.ip == "0.0.0.0" ? "127.0.0.1" : port.ip}:${port.external}"
     if port.protocol == "tcp"
   ]
+  sensitive = true
 }
 
 output "container_settings" {
@@ -39,4 +41,5 @@ output "common_labels" {
 output "lesson_contract" {
   description = "Root-level contract object for tests and plan review."
   value       = terraform_data.lesson_contract.input
+  sensitive   = true
 }

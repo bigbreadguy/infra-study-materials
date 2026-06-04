@@ -45,6 +45,7 @@ variable "service_name" {
 variable "image_repository" {
   description = "Docker image repository to run for the workshop container."
   type        = string
+  sensitive   = true
   default     = "nginx"
 
   validation {
@@ -56,6 +57,7 @@ variable "image_repository" {
 variable "image_tag" {
   description = "Pinned Docker image tag. Avoid latest so plan output stays reviewable."
   type        = string
+  sensitive   = true
   default     = "1.27-alpine"
 
   validation {
@@ -73,6 +75,7 @@ variable "published_ports" {
     ip       = string
   }))
 
+  sensitive = true
   default = [
     {
       internal = 80
@@ -180,8 +183,9 @@ variable "extra_labels" {
 variable "docker_host" {
   description = "Optional Docker API host URI. Leave null to use the provider default."
   type        = string
-  default     = null
+  sensitive   = true
   nullable    = true
+  default     = null
 
   validation {
     condition     = var.docker_host == null || can(regex("^(unix|tcp|ssh)://", var.docker_host))
