@@ -1,0 +1,13 @@
+project_id = "replace-with-dedicated-study-project"
+
+# Set these to true only after the safety bootstrap is complete.
+billing_budget_confirmed = true
+iam_api_enabled          = true
+
+region                       = "us-central1"
+service_account_id           = "tf-practice-runner"
+service_account_display_name = "Terraform Practice Runner"
+
+project_roles = [
+  "roles/storage.objectViewer",
+]

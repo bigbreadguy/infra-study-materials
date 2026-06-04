@@ -1,0 +1,13 @@
+project_id = "replace-with-dedicated-study-project"
+
+# Set this to true only after creating budget alerts for the study project.
+billing_budget_confirmed = true
+
+region      = "us-central1"
+zone        = "us-central1-a"
+environment = "sandbox"
+owner       = "kenny"
+
+extra_labels = {
+  curriculum = "terraform_basics"
+}

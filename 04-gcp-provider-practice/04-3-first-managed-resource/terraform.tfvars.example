@@ -1,0 +1,16 @@
+project_id = "replace-with-dedicated-study-project"
+
+# Set these to true only after the safety bootstrap is complete.
+billing_budget_confirmed = true
+storage_api_enabled      = true
+
+region             = "us-central1"
+bucket_location    = "us-central1"
+bucket_name_prefix = "tf-gcp-provider-practice"
+force_destroy      = true
+environment        = "sandbox"
+owner              = "kenny"
+
+extra_labels = {
+  curriculum = "terraform_basics"
+}
