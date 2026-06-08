@@ -29,6 +29,7 @@ Leave `_PIP_ADDITIONAL_REQUIREMENTS` unset or empty for normal runs; use it only
 ## Worker Node Scraper DAG
 
 The `scraper-worker-node` DAG runs the local scraper package on an Airflow Celery worker. Store the action plan as an Airflow Variable named `scraper_worker_action_plan`, or trigger the DAG with `{"action_plan_variable": "scraper_worker_action_plan"}` to use another generic variable key.
+The local Airflow image installs only the Chromium Playwright browser, so set `browser_name` to `chromium`.
 
 The action plan may reference Airflow's `logical_date` with placeholders. Use `{{ year }}` and `{{ month }}` for the same year/month values used by the local scraper script.
 

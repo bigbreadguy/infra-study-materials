@@ -11,7 +11,7 @@ from airflow.sdk import DAG, task
 
 
 DEFAULT_ACTION_PLAN_VARIABLE = "scraper_worker_action_plan"
-SUPPORTED_BROWSERS = {"chromium", "firefox", "webkit"}
+SUPPORTED_BROWSERS = {"chromium"}
 
 
 def _logical_date_from_context() -> datetime:

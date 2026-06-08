@@ -44,7 +44,11 @@ USER airflow
 
 COPY requirements/airflow-runtime.txt /requirements/airflow-runtime.txt
 
-RUN pip install --no-cache-dir -r /requirements/airflow-runtime.txt \
+RUN AIRFLOW_VERSION="$(python -c 'from importlib.metadata import version; print(version("apache-airflow"))')" \
+    && pip install --no-cache-dir \
+        "apache-airflow==${AIRFLOW_VERSION}" \
+        -r /requirements/airflow-runtime.txt \
+        --constraint "${HOME}/constraints.txt" \
     && python -m playwright install chromium
 
 USER root
