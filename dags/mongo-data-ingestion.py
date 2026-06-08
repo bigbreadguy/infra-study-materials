@@ -65,6 +65,10 @@ def _extract_raw_data_to_gcs(logical_date):
         for doc in collection.find({"grainId": grain_id, "ts": logical_date}):
             lines.append(json_util.dumps(doc))
 
+    print("=== Raw Documents from Mongo ===")
+    print(lines)
+    print("================================")
+
     payload = "\n".join(lines)
     if payload:
         payload = f"{payload}\n"
