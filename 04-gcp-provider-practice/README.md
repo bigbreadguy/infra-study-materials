@@ -11,32 +11,38 @@ Confidence: 96/100.
 
 ## Session Sequence
 
-1. `01-project-safety-bootstrap`
+1. `04-1-project-safety-bootstrap`
    - Create or select a dedicated study project.
    - Configure billing/free trial awareness, budget alerts, ADC, and default
      region choices.
    - Confidence: 96/100.
 
-2. `02-provider-basics-read-only`
+2. `04-2-provider-basics-read-only`
    - Configure the `hashicorp/google` provider and inspect project context with
      data sources.
    - No resources are created.
    - Confidence: 95/100.
 
-3. `03-first-managed-resource`
+3. `04-3-first-managed-resource`
    - Create one empty, labelled Cloud Storage bucket in a free-tier-eligible US
      region.
    - Practice plan review, apply, state inspection, and destroy.
    - Confidence: 90/100.
 
-4. `04-iam-basics-no-keys`
+4. `04-4-iam-basics-no-keys`
    - Create a service account and grant narrow IAM roles without key files.
    - Confidence: 89/100.
 
-5. `05-gcs-remote-state-bootstrap`
+5. `04-5-gcs-remote-state-bootstrap`
    - Create a dedicated GCS bucket for Terraform state and learn the backend
      migration flow.
    - Confidence: 90/100.
+
+6. `04-6-airflow-cloud-run-dataform-etl`
+   - Plan a local Airflow orchestration pattern using Cloud Run Jobs, GCS,
+     BigQuery, and Dataform.
+   - Planning-only for now; no resources are created by this directory yet.
+   - Confidence: 88/100.
 
 ## Shared Safety Rules
 
@@ -46,6 +52,8 @@ Confidence: 96/100.
 - Commit only `terraform.tfvars.example` placeholders.
 - Do not commit `.terraform/`, state files, saved plans, credentials, or ADC
   files.
+- Do not commit real ETL target URLs, selectors, cookies, request headers,
+  action plans, certificates, or secret values.
 - Prefer ADC first; introduce service account impersonation later.
 
 Confidence: 97/100.

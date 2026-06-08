@@ -11,7 +11,7 @@ terraform {
 
 provider "docker" {
   # Leave null for the provider default, or set a value such as
-  # unix:///Users/kenny/.docker/run/docker.sock on Docker Desktop for macOS.
+  # unix://$HOME/.docker/run/docker.sock on Docker Desktop for macOS.
   host = var.docker_host
 }
 

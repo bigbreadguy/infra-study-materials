@@ -3,6 +3,10 @@
 # ---------------------------------------------------------------------------
 *.env
 *.env.local
+*.env.*
+.env.*
+!.env.example
+!.env.*.example
 
 # GCP service account keys & credentials — NEVER commit these
 *.json.key
@@ -13,6 +17,16 @@ credentials.json
 service-account*.json
 gcp-*.json
 application_default_credentials.json
+*.pem
+*.p12
+*.pfx
+*.key
+*.crt
+*.cert
+*.kubeconfig
+adc.json
+secrets/
+.secrets/
 
 # ---------------------------------------------------------------------------
 # Terraform

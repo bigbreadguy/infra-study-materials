@@ -93,6 +93,14 @@ Confidence: 95/100.
      exists.
    - Confidence: 90/100.
 
+6. `04-6-airflow-cloud-run-dataform-etl`
+   - Plan a Terraform-managed GCP ETL environment where local Airflow triggers
+     Cloud Run Jobs, lands immutable raw data in GCS, loads BigQuery, and runs
+     Dataform transformations.
+   - Keep this session planning-only until the service accounts, IAM scope,
+     secret handling, image build path, and cleanup sequence are reviewed.
+   - Confidence: 88/100.
+
 ## Deferred Future Extensions
 
 The following topics are useful, but they are no longer part of the immediate
@@ -128,7 +136,8 @@ workshop path:
     |-- 04-2-provider-basics-read-only/
     |-- 04-3-first-managed-resource/
     |-- 04-4-iam-basics-no-keys/
-    `-- 04-5-gcs-remote-state-bootstrap/
+    |-- 04-5-gcs-remote-state-bootstrap/
+    `-- 04-6-airflow-cloud-run-dataform-etl/
 ```
 
 Each Terraform lesson directory should include:
@@ -178,6 +187,10 @@ Confidence: 95/100.
 - Keep remote state as a dedicated lesson because the GCS backend requires a
   pre-existing bucket.
   Confidence: 94/100.
+- Keep public-repository ETL examples generic. Do not commit target URLs,
+  selectors, cookies, action payloads, API tokens, certificates, ADC files, or
+  service account key material.
+  Confidence: 98/100.
 
 ## Immediate Next Steps
 
@@ -189,5 +202,7 @@ Confidence: 95/100.
    provider exercise.
 4. Apply real GCP resources only in the later GCP sessions after plan review
    and explicit cleanup confirmation.
+5. Treat `04-6-airflow-cloud-run-dataform-etl` as a design review artifact
+   until the earlier GCP fundamentals and remote state lesson are understood.
 
 Confidence: 94/100.

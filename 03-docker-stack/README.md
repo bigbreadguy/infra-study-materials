@@ -41,14 +41,14 @@ Confidence: 93/100.
 On macOS with Docker Desktop, the Docker CLI may use a socket similar to:
 
 ```sh
-unix:///Users/kenny/.docker/run/docker.sock
+unix://$HOME/.docker/run/docker.sock
 ```
 
 If the default provider connection cannot find Docker, pass the socket
 explicitly:
 
 ```sh
-terraform plan -var='docker_host=unix:///Users/kenny/.docker/run/docker.sock'
+terraform plan -var='docker_host=unix://$HOME/.docker/run/docker.sock'
 ```
 
 Confidence: 88/100.
