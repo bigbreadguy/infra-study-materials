@@ -30,6 +30,8 @@ Leave `_PIP_ADDITIONAL_REQUIREMENTS` unset or empty for normal runs; use it only
 
 The `scraper-worker-node` DAG runs the local scraper package on an Airflow Celery worker. Store the action plan as an Airflow Variable named `scraper_worker_action_plan`, or trigger the DAG with `{"action_plan_variable": "scraper_worker_action_plan"}` to use another generic variable key.
 
+The action plan may reference Airflow's `logical_date` with placeholders. Use `{{ year }}` and `{{ month }}` for the same year/month values used by the local scraper script.
+
 Example placeholder shape:
 
 ```json
@@ -39,6 +41,9 @@ Example placeholder shape:
   "headless": true,
   "sleep_time": 0.5,
   "actions": [
+    {"select_option": {"selector": "title=example-year", "value": "{{ year }}"}},
+    {"select_month_option": {"selector": "title=example-month", "month": "{{ month }}"}},
+    {"check_month_box": {"start_year": "{{ year }}", "month": "{{ month }}"}},
     {"return_stats": {}}
   ]
 }
