@@ -24,7 +24,7 @@ Confidence: 96/100.
 4. Bootstrap a dedicated GCP study project with budget alerts and ADC.
 5. Practice GCP provider configuration, read-only data sources, Cloud Storage,
    IAM without key files, and GCS remote state.
-6. Plan an advanced local Airflow orchestration pattern that uses Cloud Run
+6. Implement an advanced local Airflow orchestration pattern that uses Cloud Run
    Jobs, GCS, BigQuery, and Dataform without committing secrets or target data.
 
 Confidence: 95/100.

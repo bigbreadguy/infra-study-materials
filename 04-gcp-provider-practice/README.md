@@ -39,10 +39,11 @@ Confidence: 96/100.
    - Confidence: 90/100.
 
 6. `04-6-airflow-cloud-run-dataform-etl`
-   - Plan a local Airflow orchestration pattern using Cloud Run Jobs, GCS,
-     BigQuery, and Dataform.
-   - Planning-only for now; no resources are created by this directory yet.
-   - Confidence: 88/100.
+   - Implement a review-first local Airflow orchestration pattern using Cloud
+     Run Jobs, GCS, BigQuery, and Dataform.
+   - Do not apply until IAM principals, worker images, secret handling,
+     Dataform repository readiness, cost exposure, and cleanup are reviewed.
+   - Confidence: 90/100.
 
 ## Shared Safety Rules
 

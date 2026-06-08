@@ -94,12 +94,13 @@ Confidence: 95/100.
    - Confidence: 90/100.
 
 6. `04-6-airflow-cloud-run-dataform-etl`
-   - Plan a Terraform-managed GCP ETL environment where local Airflow triggers
-     Cloud Run Jobs, lands immutable raw data in GCS, loads BigQuery, and runs
-     Dataform transformations.
-   - Keep this session planning-only until the service accounts, IAM scope,
-     secret handling, image build path, and cleanup sequence are reviewed.
-   - Confidence: 88/100.
+   - Implement a Terraform-managed GCP ETL environment where local Airflow
+     triggers Cloud Run Jobs, lands immutable raw data in GCS, loads BigQuery,
+     and runs Dataform transformations.
+   - Keep this session review-first until the service accounts, IAM scope,
+     secret handling, image build path, Dataform repository state, cost
+     exposure, and cleanup sequence are reviewed.
+   - Confidence: 90/100.
 
 ## Deferred Future Extensions
 
@@ -202,7 +203,7 @@ Confidence: 95/100.
    provider exercise.
 4. Apply real GCP resources only in the later GCP sessions after plan review
    and explicit cleanup confirmation.
-5. Treat `04-6-airflow-cloud-run-dataform-etl` as a design review artifact
+5. Treat `04-6-airflow-cloud-run-dataform-etl` as review-first infrastructure
    until the earlier GCP fundamentals and remote state lesson are understood.
 
 Confidence: 94/100.
