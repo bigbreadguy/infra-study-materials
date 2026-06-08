@@ -1,9 +1,9 @@
 project_id = "example-study-proj"
 
 # Set these to true only after completing the earlier GCP safety lessons.
-billing_budget_confirmed = true
-adc_credentials_reviewed = true
-remote_state_reviewed    = true
+billing_budget_confirmed = false
+adc_credentials_reviewed = false
+remote_state_reviewed    = false
 
 region              = "us-central1"
 bq_location         = "us-central1"
@@ -49,7 +49,8 @@ default_action_plan_uri = "gs://example-bucket/action-plan.json"
 
 # Enable only when the scraper target requires credentials. Terraform creates
 # secret metadata and IAM only; add secret versions outside Terraform.
-enable_scraper_credentials_secret = false
+enable_scraper_credentials_secret        = false
+attach_scraper_credentials_secret_to_job = false
 
 # The default path uses Airflow BigQuery load operators. Enable this only if
 # load/normalization needs custom container code.

@@ -178,11 +178,13 @@ locals {
   )
 
   safety_contract = {
-    billing_budget_confirmed = var.billing_budget_confirmed
-    adc_credentials_reviewed = var.adc_credentials_reviewed
-    remote_state_reviewed    = var.remote_state_reviewed
-    terraform_executes_jobs  = false
-    secret_versions_created  = false
-    loader_job_enabled       = var.enable_loader_job
+    billing_budget_confirmed            = var.billing_budget_confirmed
+    adc_credentials_reviewed            = var.adc_credentials_reviewed
+    remote_state_reviewed               = var.remote_state_reviewed
+    terraform_executes_jobs             = false
+    secret_versions_created             = false
+    scraper_credentials_secret_created  = var.enable_scraper_credentials_secret
+    scraper_credentials_secret_attached = var.attach_scraper_credentials_secret_to_job
+    loader_job_enabled                  = var.enable_loader_job
   }
 }

@@ -55,7 +55,7 @@ resource "google_cloud_run_v2_job" "scrape_actions" {
         }
 
         dynamic "env" {
-          for_each = var.enable_scraper_credentials_secret ? [1] : []
+          for_each = var.enable_scraper_credentials_secret && var.attach_scraper_credentials_secret_to_job ? [1] : []
 
           content {
             name = "SCRAPER_CREDENTIALS_JSON"
@@ -83,6 +83,13 @@ resource "google_cloud_run_v2_job" "scrape_actions" {
     google_project_service.required["run.googleapis.com"],
     google_service_account_iam_member.terraform_deployer_act_as,
   ]
+
+  lifecycle {
+    precondition {
+      condition     = !var.attach_scraper_credentials_secret_to_job || var.enable_scraper_credentials_secret
+      error_message = "attach_scraper_credentials_secret_to_job requires enable_scraper_credentials_secret = true."
+    }
+  }
 }
 
 resource "google_cloud_run_v2_job" "load_raw_to_bigquery" {
@@ -145,4 +152,11 @@ resource "google_cloud_run_v2_job" "load_raw_to_bigquery" {
     google_project_service.required["run.googleapis.com"],
     google_service_account_iam_member.terraform_deployer_act_as,
   ]
+
+  lifecycle {
+    precondition {
+      condition     = !var.enable_loader_job || var.loader_image != ""
+      error_message = "loader_image must be set when enable_loader_job is true."
+    }
+  }
 }

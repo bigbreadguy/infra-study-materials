@@ -376,7 +376,13 @@ variable "scraper_output_format" {
 }
 
 variable "enable_scraper_credentials_secret" {
-  description = "Whether to create Secret Manager metadata and wire the scraper job to read the latest secret version."
+  description = "Whether to create Secret Manager metadata and IAM for scraper credentials. Secret versions are created outside Terraform."
+  type        = bool
+  default     = false
+}
+
+variable "attach_scraper_credentials_secret_to_job" {
+  description = "Whether to attach the scraper credentials secret to the Cloud Run Job. Enable only after a secret version exists."
   type        = bool
   default     = false
 }
@@ -393,7 +399,7 @@ variable "scraper_credentials_secret_id" {
 }
 
 variable "scraper_credentials_secret_version" {
-  description = "Secret Manager version reference exposed to the scraper job when the optional secret metadata is enabled."
+  description = "Secret Manager version reference exposed to the scraper job when attach_scraper_credentials_secret_to_job is enabled."
   type        = string
   default     = "latest"
 

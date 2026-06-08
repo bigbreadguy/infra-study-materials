@@ -154,6 +154,13 @@ Confidence: 94/100.
 Enable one API per `google_project_service` resource and use
 `disable_on_destroy = false` in this study project.
 
+Prerequisite: Service Usage must already be usable by the Terraform caller,
+usually from the project bootstrap lesson. Terraform can then manage the rest
+of the API set, but a project where API management is unavailable needs manual
+or earlier bootstrap first.
+
+Confidence: 92/100.
+
 Required APIs:
 
 | API | Why | Confidence |
@@ -320,8 +327,8 @@ resource "google_cloud_run_v2_job" "scrape_actions" {
 ```
 
 If a target requires credentials, create the Secret Manager secret metadata and
-IAM in Terraform, but add secret versions outside Terraform so secret values do
-not enter state:
+IAM in Terraform first, add secret versions outside Terraform so secret values
+do not enter state, and only then wire the Cloud Run Job to that secret version:
 
 ```hcl
 env {
@@ -336,7 +343,10 @@ env {
 }
 ```
 
-Confidence: 93/100.
+This two-step flow avoids asking Terraform to create a Cloud Run Job that
+references a secret version before that version exists.
+
+Confidence: 95/100.
 
 #### Scraper Container Contract
 
@@ -649,7 +659,8 @@ Confidence: 92/100.
 5. Create GCS buckets and BigQuery datasets.
    Confidence: 95/100.
 6. Create optional Secret Manager secret metadata for scraper credentials, but
-   add secret versions outside Terraform.
+   add secret versions outside Terraform before wiring the Cloud Run Job to the
+   secret.
    Confidence: 88/100.
 7. Apply resource-level IAM bindings for GCS, BigQuery, Cloud Run Jobs, Dataform,
    Secret Manager, and service account impersonation.

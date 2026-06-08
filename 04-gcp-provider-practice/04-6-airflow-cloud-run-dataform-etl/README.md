@@ -118,6 +118,13 @@ Confidence: 97/100.
 
 ## Commands
 
+Prerequisite: lesson `04-1` should already have confirmed the dedicated study
+project, billing guardrails, ADC, and Service Usage API readiness. Terraform
+can manage the APIs listed here, but it cannot bootstrap API management in a
+project where Service Usage itself is unavailable to the caller.
+
+Confidence: 92/100.
+
 Run from this directory after replacing placeholders in an ignored local
 `terraform.tfvars`:
 
@@ -175,8 +182,10 @@ Confidence: 90/100.
    execution overrides.
    Confidence: 95/100.
 
-4. Secret Manager creates metadata only when enabled. Secret values must be
-   added outside Terraform to keep values out of state.
+4. Secret Manager has two switches: `enable_scraper_credentials_secret` creates
+   metadata and IAM, while `attach_scraper_credentials_secret_to_job` wires the
+   Cloud Run Job to an existing secret version. Secret values must be added
+   outside Terraform to keep values out of state.
    Confidence: 97/100.
 
 5. Dataform uses a custom runner service account, and the Dataform service
@@ -206,12 +215,17 @@ Confidence: 90/100.
    plans stay in private storage created outside Terraform.
    Confidence: 96/100.
 
-5. If `enable_scraper_credentials_secret = true`, secret versions are added
-   with `gcloud`, CI/CD, or another private path after Terraform creates the
-   secret metadata.
+5. If scraper credentials are needed, first set
+   `enable_scraper_credentials_secret = true`, apply the metadata and IAM, add
+   a secret version with `gcloud`, CI/CD, or another private path, then set
+   `attach_scraper_credentials_secret_to_job = true`.
    Confidence: 97/100.
 
-6. `terraform plan` shows no unexpected project-level broad roles, public IAM
+6. If `enable_loader_job = true`, `loader_image` points to a real,
+   already-pushed image tag or digest.
+   Confidence: 93/100.
+
+7. `terraform plan` shows no unexpected project-level broad roles, public IAM
    members, service account keys, secret versions, job executions, or
    destructive dataset/bucket deletion.
    Confidence: 96/100.
