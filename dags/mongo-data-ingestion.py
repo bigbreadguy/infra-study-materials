@@ -50,11 +50,11 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
 
 def _extract_raw_data_to_gcs(logical_date):
     config = _load_ingestion_config()
-    bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
+    # bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
     grain_id = _require_variable("mongo_grain_id", config["mongo_grain_id"])
-    object_name = _build_gcs_object_name(
-        logical_date, grain_id, config["gcs_raw_prefix"]
-    )
+    # object_name = _build_gcs_object_name(
+    #     logical_date, grain_id, config["gcs_raw_prefix"]
+    # )
     lines = []
 
     with MongoHook(mongo_conn_id=config["mongo_conn_id"]) as hook:
@@ -73,16 +73,16 @@ def _extract_raw_data_to_gcs(logical_date):
     if payload:
         payload = f"{payload}\n"
 
-    GCSHook(gcp_conn_id=config["gcp_conn_id"]).upload(
-        bucket_name=bucket_name,
-        object_name=object_name,
-        data=payload,
-        mime_type="application/x-ndjson",
-    )
-    print(f"Uploaded {len(lines)} documents to gs://{bucket_name}/{object_name}")
+    # GCSHook(gcp_conn_id=config["gcp_conn_id"]).upload(
+    #     bucket_name=bucket_name,
+    #     object_name=object_name,
+    #     data=payload,
+    #     mime_type="application/x-ndjson",
+    # )
+    # print(f"Uploaded {len(lines)} documents to gs://{bucket_name}/{object_name}")
     return {
-        "bucket": bucket_name,
-        "object": object_name,
+        # "bucket": bucket_name,
+        # "object": object_name,
         "document_count": len(lines),
     }
 
