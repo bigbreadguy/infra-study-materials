@@ -13,3 +13,35 @@ Airflow bundled example DAGs are disabled for cluster initialization:
 
 With a fresh metadata database, Airflow should load only DAGs from the repository `dags/` directory.
 If the cluster was already initialized before this setting changed, stale example DAG metadata may remain until the Airflow metadata database is cleaned or recreated.
+
+## Local Private DAG Inputs
+
+This public repository can run DAGs that import local-only code without committing that code or its paths.
+
+- Keep private DAGs under ignored paths such as `dags/private/` or `dags/local/`.
+- Keep local source mounts in an ignored Compose override file.
+- Mount only the importable source tree read-only, and set `PYTHONPATH` to the mounted parent directory.
+- Keep credentials, target URLs, selectors, and private response payloads in Airflow Connections, Airflow Variables, a secrets backend, or ignored env files.
+
+The Airflow image is built from `Dockerfile` so runtime dependencies are repeatable. Rebuild it after changing `requirements/airflow-runtime.txt`.
+Leave `_PIP_ADDITIONAL_REQUIREMENTS` unset or empty for normal runs; use it only for temporary experiments.
+
+## Worker Node Scraper DAG
+
+The `scraper-worker-node` DAG runs the local scraper package on an Airflow Celery worker. Store the action plan as an Airflow Variable named `scraper_worker_action_plan`, or trigger the DAG with `{"action_plan_variable": "scraper_worker_action_plan"}` to use another generic variable key.
+
+Example placeholder shape:
+
+```json
+{
+  "entrypoint_url": "https://example.invalid",
+  "browser_name": "chromium",
+  "headless": true,
+  "sleep_time": 0.5,
+  "actions": [
+    {"return_stats": {}}
+  ]
+}
+```
+
+Do not commit real target URLs, selectors, headers, cookies, credentials, response payloads, or private action plans. Use Airflow Variables, Airflow Connections, a secrets backend, or ignored local files for those values.

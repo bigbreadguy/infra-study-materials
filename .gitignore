@@ -222,6 +222,21 @@ __marimo__/
 # Environment variables
 *.env
 *.env.local
+*.env.*
+.env.*
+!.env.example
 
 # Airflow files
 logs/
+
+# Local-only Airflow integration files
+docker-compose.override*.yaml
+docker-compose.override*.yml
+docker-compose.local*.yaml
+docker-compose.local*.yml
+/dags/local/
+/dags/private/
+/plugins/local/
+/plugins/private/
+/local/
+/private/
