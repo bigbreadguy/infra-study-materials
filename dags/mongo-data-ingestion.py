@@ -48,12 +48,12 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
     return "/".join(part for part in path_parts if part)
 
 
-def _extract_raw_data_to_gcs(logical_date):
+def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
     config = _load_ingestion_config()
     # bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
     grain_id = _require_variable("mongo_grain_id", config["mongo_grain_id"])
     # object_name = _build_gcs_object_name(
-    #     logical_date, grain_id, config["gcs_raw_prefix"]
+    #     data_interval_start, grain_id, config["gcs_raw_prefix"]
     # )
     lines = []
 
@@ -62,7 +62,13 @@ def _extract_raw_data_to_gcs(logical_date):
         collection = hook.get_conn().get_database(
             config["mongo_database_name"]
         ).get_collection(config["mongo_collection_name"])
-        for doc in collection.find({"grainId": grain_id, "ts": logical_date}):
+        for doc in collection.find({
+            "grainId": grain_id,
+            "ts": {
+                "$gte": data_interval_start,
+                "$lt": data_interval_end,
+            }
+        }):
             lines.append(json_util.dumps(doc))
 
     print("=== Raw Documents from Mongo ===")
@@ -96,6 +102,9 @@ with DAG(
     @task()
     def extract_raw_data_to_gcs():
         context = get_current_context()
-        return _extract_raw_data_to_gcs(context["logical_date"])
+        return _extract_raw_data_to_gcs(
+            context["data_interval_start"],
+            context["data_interval_end"]
+        )
 
     extract_raw_data_to_gcs()
