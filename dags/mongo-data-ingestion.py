@@ -7,14 +7,21 @@ from airflow.sdk import DAG, get_current_context, task
 # pyrefly: ignore [missing-import]
 from airflow.sdk import Variable
 # pyrefly: ignore [missing-import]
-from airflow.providers.google.cloud.hooks.gcs import GCSHook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 # pyrefly: ignore [missing-import]
-from airflow.providers.google.cloud.hooks.dataform import DataformHook
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 # pyrefly: ignore [missing-import]
 from airflow.providers.mongo.hooks.mongo import MongoHook
 # pyrefly: ignore [missing-import]
 from bson import json_util
 
+from common.bigquery_market_index import (
+    BigQueryTransformConfig,
+    run_create_raw_data_samples,
+    run_merge_dim_grains,
+    run_merge_dim_metrics,
+    run_merge_fact_values,
+)
 from common.gcs_object import upload_replacing_object
 
 
@@ -28,39 +35,35 @@ def _required_airflow_variable(name):
     return _require_variable(name, Variable.get(name, default=""))
 
 
-def _optional_int_variable(name, value):
-    if not value:
-        return None
-    return int(value)
+def _derive_raw_gcs_uri(bucket_name, raw_prefix):
+    normalized_prefix = raw_prefix.strip("/")
+    if normalized_prefix:
+        return f"gs://{bucket_name}/{normalized_prefix}/*"
+
+    return f"gs://{bucket_name}/*"
 
 
 def _load_ingestion_config():
+    gcs_bucket_name = _required_airflow_variable("gcs_bucket_name")
+    gcs_raw_prefix = _required_airflow_variable("gcs_raw_prefix")
+
     return {
         "mongo_conn_id": _required_airflow_variable("mongo_conn_id"),
         "mongo_database_name": _required_airflow_variable("mongo_database_name"),
         "mongo_collection_name": _required_airflow_variable("mongo_collection_name"),
         "mongo_grain_id": _required_airflow_variable("mongo_grain_id"),
         "gcp_conn_id": _required_airflow_variable("gcp_conn_id"),
-        "gcs_bucket_name": _required_airflow_variable("gcs_bucket_name"),
-        "gcs_raw_prefix": _required_airflow_variable("gcs_raw_prefix"),
+        "gcs_bucket_name": gcs_bucket_name,
+        "gcs_raw_prefix": gcs_raw_prefix,
         "gcs_impersonation_chain": _required_airflow_variable(
             "gcs_impersonation_chain"
         ),
-        "dataform_project_id": _required_airflow_variable("dataform_project_id"),
-        "dataform_region": _required_airflow_variable("dataform_region"),
-        "dataform_repository_id": _required_airflow_variable("dataform_repository_id"),
-        "dataform_workflow_config": _required_airflow_variable(
-            "dataform_workflow_config"
-        ),
-        "dataform_impersonation_chain": _required_airflow_variable(
-            "dataform_impersonation_chain"
-        ),
-        "dataform_wait_time_seconds": int(
-            Variable.get("dataform_wait_time_seconds", default="10")
-        ),
-        "dataform_timeout_seconds": _optional_int_variable(
-            "dataform_timeout_seconds",
-            Variable.get("dataform_timeout_seconds", default=""),
+        "bigquery_project_id": _required_airflow_variable("bigquery_project_id"),
+        "bigquery_dataset_id": _required_airflow_variable("bigquery_dataset_id"),
+        "bigquery_region": _required_airflow_variable("bigquery_region"),
+        "raw_gcs_uri": _derive_raw_gcs_uri(gcs_bucket_name, gcs_raw_prefix),
+        "bigquery_impersonation_chain": _required_airflow_variable(
+            "bigquery_impersonation_chain"
         ),
     }
 
@@ -130,44 +133,57 @@ def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
     }
 
 
-def _trigger_dataform_workflow(raw_location):
-    config = _load_ingestion_config()
-    project_id = _require_variable("dataform_project_id", config["dataform_project_id"])
-    region = _require_variable("dataform_region", config["dataform_region"])
-    repository_id = _require_variable(
-        "dataform_repository_id", config["dataform_repository_id"]
+def _bigquery_transform_config(config):
+    return BigQueryTransformConfig(
+        project_id=_require_variable(
+            "bigquery_project_id",
+            config["bigquery_project_id"],
+        ),
+        dataset_id=_require_variable(
+            "bigquery_dataset_id",
+            config["bigquery_dataset_id"],
+        ),
+        region=_require_variable("bigquery_region", config["bigquery_region"]),
+        raw_gcs_uri=_require_variable("raw_gcs_uri", config["raw_gcs_uri"]),
     )
-    workflow_config = _require_variable(
-        "dataform_workflow_config", config["dataform_workflow_config"]
-    )
-    hook = DataformHook(
+
+
+def _bigquery_client(config):
+    hook = BigQueryHook(
         gcp_conn_id=config["gcp_conn_id"],
-        impersonation_chain=config["dataform_impersonation_chain"],
+        impersonation_chain=config["bigquery_impersonation_chain"],
+        location=config["bigquery_region"],
+        use_legacy_sql=False,
     )
-    workflow_invocation = hook.create_workflow_invocation(
-        project_id=project_id,
-        region=region,
-        repository_id=repository_id,
-        workflow_invocation={"workflow_config": workflow_config},
+    return hook.get_client(
+        project_id=config["bigquery_project_id"],
+        location=config["bigquery_region"],
     )
-    workflow_invocation_id = workflow_invocation.name.split("/")[-1]
+
+
+def _raw_location_from_upstream(upstream_result):
+    if isinstance(upstream_result, dict) and "raw_location" in upstream_result:
+        return upstream_result["raw_location"]
+
+    return upstream_result
+
+
+def _run_bigquery_step(upstream_result, step_name, runner):
+    raw_location = _raw_location_from_upstream(upstream_result)
+    config = _load_ingestion_config()
+    transform_config = _bigquery_transform_config(config)
+    client = _bigquery_client(config)
+    result = runner(client, transform_config)
     print(
-        "Triggered Dataform workflow invocation "
-        f"{workflow_invocation.name} for raw object "
-        f"gs://{raw_location['bucket']}/{raw_location['object']}"
+        f"Completed BigQuery transform step {step_name} with job "
+        f"{result['job_id']} for raw object "
+        f"gs://{raw_location['bucket']}/{raw_location['object']} "
+        f"using {transform_config.raw_gcs_uri}"
     )
-    hook.wait_for_workflow_invocation(
-        workflow_invocation_id=workflow_invocation_id,
-        repository_id=repository_id,
-        project_id=project_id,
-        region=region,
-        wait_time=config["dataform_wait_time_seconds"],
-        timeout=config["dataform_timeout_seconds"],
-    )
-    print(f"Dataform workflow invocation {workflow_invocation.name} completed")
     return {
-        "name": workflow_invocation.name,
-        "workflow_invocation_id": workflow_invocation_id,
+        "step": step_name,
+        "job_id": result["job_id"],
+        "location": result["location"],
         "raw_location": raw_location,
     }
 
@@ -186,8 +202,40 @@ with DAG(
         end_date = start_date.add(days=1)
         return _extract_raw_data_to_gcs(start_date, end_date)
 
-    @task()
-    def trigger_dataform_workflow(raw_location):
-        return _trigger_dataform_workflow(raw_location)
+    @task(task_id="raw_data_samples")
+    def create_raw_data_samples(raw_location):
+        return _run_bigquery_step(
+            raw_location,
+            "raw_data_samples",
+            run_create_raw_data_samples,
+        )
 
-    trigger_dataform_workflow(extract_raw_data_to_gcs())
+    @task(task_id="dim_grains")
+    def merge_dim_grains(upstream_result):
+        return _run_bigquery_step(
+            upstream_result,
+            "dim_grains",
+            run_merge_dim_grains,
+        )
+
+    @task(task_id="dim_metrics")
+    def merge_dim_metrics(upstream_result):
+        return _run_bigquery_step(
+            upstream_result,
+            "dim_metrics",
+            run_merge_dim_metrics,
+        )
+
+    @task(task_id="fact_values")
+    def merge_fact_values(upstream_result):
+        return _run_bigquery_step(
+            upstream_result,
+            "fact_values",
+            run_merge_fact_values,
+        )
+
+    raw_location = extract_raw_data_to_gcs()
+    raw_table = create_raw_data_samples(raw_location)
+    grains = merge_dim_grains(raw_table)
+    metrics = merge_dim_metrics(grains)
+    merge_fact_values(metrics)

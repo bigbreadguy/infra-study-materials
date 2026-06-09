@@ -5,6 +5,10 @@ This repository contains a local Airflow cluster configuration for infrastructur
 ## Airflow DAGs
 
 Project DAGs live in `dags/` and are mounted into Airflow at `/opt/airflow/dags`.
+Shared DAG helper modules live in `dags/common/` so Airflow can import them from
+the same mounted DAG tree. After changing files under `dags/`, restart the
+scheduler, DAG processor, and workers; a Docker rebuild is only needed when
+runtime image dependencies change.
 
 Airflow bundled example DAGs are disabled for cluster initialization:
 
@@ -55,10 +59,10 @@ Do not commit real target URLs, selectors, headers, cookies, credentials, respon
 ## Bloomberg Raw Data Ingestion
 
 The `mongo-data-ingestion` DAG extracts Mongo/Bloomberg sample rows, uploads raw
-NDJSON to GCS, and then triggers the configured Dataform workflow. Airflow does
-not write to BigQuery and does not own SQL upsert logic for `dl_securities`.
-Dataform normalizes the raw records into `dim_grains`, `dim_metrics`, and
-`fact_market_indexes`.
+NDJSON to GCS, and then runs reusable BigQuery scripts from `dags/common` that
+preserve the former Dataform SQL semantics. Airflow creates or replaces the
+`raw_data_samples` external table, then merges `dim_grains`, `dim_metrics`, and
+`fact_values` in order.
 
 Configure these Airflow Variables:
 
@@ -71,17 +75,12 @@ Configure these Airflow Variables:
 - `gcs_raw_prefix`: raw object prefix, for example `bloomberg/raw`. Required.
 - `gcs_impersonation_chain`: service account to impersonate for raw GCS upload.
   Required.
-- `dataform_project_id`: Dataform project id. Required.
-- `dataform_region`: Dataform repository region. Required.
-- `dataform_repository_id`: Dataform repository id. Required.
-- `dataform_workflow_config`: fully-qualified Dataform workflow config name.
+- `bigquery_project_id`: BigQuery project id for transform-load jobs. Required.
+- `bigquery_dataset_id`: BigQuery dataset id, for example `dl_bloomberg_data`.
   Required.
-- `dataform_impersonation_chain`: service account to impersonate for Dataform
-  workflow orchestration. Required.
-- `dataform_wait_time_seconds`: polling interval for Dataform completion.
-  Optional; defaults to `10`.
-- `dataform_timeout_seconds`: Dataform wait timeout. Optional; blank means use
-  provider default behavior.
+- `bigquery_region`: BigQuery job location. Required.
+- `bigquery_impersonation_chain`: service account to impersonate for BigQuery
+  transform-load jobs. Required.
 
 The raw object path is deterministic:
 
@@ -101,27 +100,21 @@ replacement permission on the raw bucket. If an upload fails with a missing
 `storage.objects.delete` permission, check that Terraform has completed the
 staged IAM apply that restores that permission.
 
-The current DAG triggers a Dataform workflow config after the raw upload. It
-does not pass the uploaded object path as a per-run Dataform variable, so the
-Dataform SQLX actions should resolve raw files from the configured bucket and
-prefix. If Dataform must process only the exact object uploaded by a single DAG
-run, change the orchestration design to create a per-run Dataform compilation
-result with compilation vars such as `raw_uri`, then invoke that compilation
-result instead of invoking the workflow config directly.
+The current DAG recreates the raw external table from
+`gs://<gcs_bucket_name>/<gcs_raw_prefix>/*` after each raw upload. It does not
+restrict downstream MERGE statements to only the uploaded object path;
+idempotent merge keys keep reruns stable across the configured raw prefix.
 
 If impersonation fails with `iam.serviceAccounts.getAccessToken`, the Airflow
 runtime ADC principal cannot impersonate the configured service account. Grant
 that principal `roles/iam.serviceAccountTokenCreator` on the GCS uploader service
-account for upload tasks, and on the Dataform orchestration service account for
-Dataform trigger tasks.
+account for upload tasks, and on the BigQuery transformer service account for
+transform-load tasks.
 
-Do not commit service account keys, Mongo credentials, Dataform
-`workflow_settings.yaml` contents, or plaintext secrets. Use ADC, attached
-service accounts, impersonation, Secret Manager, Airflow Connections, Airflow
-Variables, or environment-provided credentials.
+Do not commit service account keys, Mongo credentials, or plaintext secrets. Use
+ADC, attached service accounts, impersonation, Secret Manager, Airflow
+Connections, Airflow Variables, or environment-provided credentials.
 
-Terraform/Dataform owns the `dl_securities` BigQuery schema and SQLX MERGE
-logic. The current schema migration is staged: first disable deletion protection
-on legacy tables, then replace them with the Mongo/Dataform contract, then
-re-enable deletion protection. Until that finishes, Airflow can upload raw data,
-but the Dataform upsert may fail or target the wrong schema.
+Terraform owns the `dl_bloomberg_data` BigQuery dataset, durable target tables,
+GCS bucket access, and Airflow impersonation identities. The reusable modules in
+`dags/common` own the executable BigQuery transform-load SQL.

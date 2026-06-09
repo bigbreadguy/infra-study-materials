@@ -1,0 +1,127 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from unittest import TestCase
+
+
+sys.path.append(str(Path(__file__).resolve().parents[1] / "dags"))
+
+from common.bigquery_market_index import (
+    BigQueryTransformConfig,
+    run_merge_dim_grains,
+)
+from common.bigquery_market_index_sql import (
+    dim_grains_merge_sql,
+    dim_metrics_merge_sql,
+    fact_values_merge_sql,
+    raw_data_samples_sql,
+)
+
+
+PROJECT_ID = "example-study-proj"
+DATASET_ID = "dl_bloomberg_data"
+RAW_GCS_URI = "gs://example-raw-bucket/bloomberg/raw/*"
+
+
+class BigQueryMarketIndexSqlTest(TestCase):
+    def test_raw_external_table_sql_includes_json_columns_and_raw_uri(self):
+        sql = raw_data_samples_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            raw_gcs_uri=RAW_GCS_URI,
+        )
+
+        self.assertIn(
+            "`example-study-proj.dl_bloomberg_data.raw_data_samples`",
+            sql,
+        )
+        self.assertIn("_id JSON", sql)
+        self.assertIn("datasetId JSON", sql)
+        self.assertIn("ts JSON", sql)
+        self.assertIn("data JSON", sql)
+        self.assertIn(f"uris = ['{RAW_GCS_URI}']", sql)
+
+    def test_dimension_merge_sql_preserves_merge_keys(self):
+        grain_sql = dim_grains_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+        metric_sql = dim_metrics_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+
+        self.assertIn("ON target.id = source.id", grain_sql)
+        self.assertIn("_FILE_NAME AS source_file_name", grain_sql)
+        self.assertIn("ON target.grain_id = source.grain_id", metric_sql)
+        self.assertIn("AND target.name = source.name", metric_sql)
+        self.assertIn("VALUES (GENERATE_UUID(), source.grain_id", metric_sql)
+        self.assertIn("'OpenInterest' AS metric_suffix", metric_sql)
+        self.assertIn("'Value' AS metric_suffix", metric_sql)
+
+    def test_fact_sql_includes_assertion_dates_and_partition_filter(self):
+        sql = fact_values_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+
+        self.assertIn("DECLARE min_candidate_logical_date DATE DEFAULT NULL", sql)
+        self.assertIn("DECLARE max_candidate_logical_date DATE DEFAULT NULL", sql)
+        self.assertIn("ASSERT (", sql)
+        self.assertIn(
+            "Every fact candidate must resolve dim_grains and dim_metrics",
+            sql,
+        )
+        self.assertIn(
+            "target.logical_date BETWEEN min_candidate_logical_date "
+            "AND max_candidate_logical_date",
+            sql,
+        )
+        self.assertIn(
+            "ON target.sample_id = source.sample_id\n"
+            "  AND target.grain_id = source.grain_id\n"
+            "  AND target.metric_id = source.metric_id\n"
+            "  AND target.logical_date = source.logical_date",
+            sql,
+        )
+        self.assertIn("VALUES (\n    GENERATE_UUID()", sql)
+        self.assertIn("metric_value", sql)
+
+    def test_runner_executes_script_with_configured_region(self):
+        config = BigQueryTransformConfig(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            region="asia-northeast3",
+            raw_gcs_uri=RAW_GCS_URI,
+        )
+        client = FakeBigQueryClient()
+
+        result = run_merge_dim_grains(client, config)
+
+        self.assertEqual(
+            result,
+            {"job_id": "job-example-001", "location": "asia-northeast3"},
+        )
+        self.assertEqual(client.queries[0]["location"], "asia-northeast3")
+        self.assertIn(
+            "MERGE `example-study-proj.dl_bloomberg_data.dim_grains`",
+            client.queries[0]["sql"],
+        )
+
+
+class FakeBigQueryJob:
+    job_id = "job-example-001"
+    location = "asia-northeast3"
+
+    def result(self):
+        return None
+
+
+class FakeBigQueryClient:
+    def __init__(self):
+        self.queries = []
+
+    def query(self, sql, *, location):
+        self.queries.append({"sql": sql, "location": location})
+        return FakeBigQueryJob()

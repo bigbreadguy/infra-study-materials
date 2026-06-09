@@ -1,1 +1,1 @@
-"""Shared DAG support code."""
+"""Reusable helpers for the infra study Airflow workflows."""
