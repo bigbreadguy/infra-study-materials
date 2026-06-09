@@ -55,6 +55,7 @@ def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
     # object_name = _build_gcs_object_name(
     #     data_interval_start, grain_id, config["gcs_raw_prefix"]
     # )
+    print(f"Extracting data for interval: {data_interval_start} to {data_interval_end}")
     lines = []
 
     with MongoHook(mongo_conn_id=config["mongo_conn_id"]) as hook:
