@@ -51,3 +51,29 @@ Example placeholder shape:
 ```
 
 Do not commit real target URLs, selectors, headers, cookies, credentials, response payloads, or private action plans. Use Airflow Variables, Airflow Connections, a secrets backend, or ignored local files for those values.
+
+## Bloomberg Raw Data Transform
+
+The `mongo-data-ingestion` DAG now writes Mongo raw data to GCS and then transforms
+that raw NDJSON into normalized curated NDJSON objects.
+The shared transform code lives in `dags/common/bloomberg_index.py`; `pyproject.toml`
+sets the Pyrefly search path to `dags` so that DAG-local package imports resolve
+consistently during local checks.
+
+Configure these Airflow Variables:
+
+- `gcs_bucket_name`: target GCS bucket. Required.
+- `mongo_grain_id`: Mongo `grainId` to extract and transform. Required.
+- `gcs_raw_prefix`: raw output prefix. Defaults to `bloomberg/raw`.
+- `gcs_curated_prefix`: curated output prefix. Defaults to `bloomberg/curated`.
+- `metric_value_sample_id_field`: sample id field name in metric value records.
+  Defaults to `samle_id` to match the requested downstream schema.
+
+For each run, the transform task writes:
+
+- `grains/.../*.ndjson`: dataset/grain records using `datasetId` as `id`.
+- `metrics/.../*.ndjson`: metric definitions with deterministic UUIDv5 `id`
+  values, for example `SX5E_Index_Open`.
+- `metric_values/.../*.ndjson`: metric observations with the metric UUID as `id`,
+  Mongo `_id` as the sample id field, daily `logical_date`, and UTC
+  `ingested_at`.

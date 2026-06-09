@@ -11,6 +11,8 @@ from airflow.providers.mongo.hooks.mongo import MongoHook
 # pyrefly: ignore [missing-import]
 from bson import json_util
 
+from common.bloomberg_index import to_ndjson, transform_raw_market_data
+
 
 def _require_variable(name, value):
     if not value:
@@ -33,6 +35,12 @@ def _load_ingestion_config():
         "gcp_conn_id": Variable.get("gcp_conn_id", default="google_cloud_default"),
         "gcs_bucket_name": Variable.get("gcs_bucket_name", default=""),
         "gcs_raw_prefix": Variable.get("gcs_raw_prefix", default="bloomberg/raw"),
+        "gcs_curated_prefix": Variable.get(
+            "gcs_curated_prefix", default="bloomberg/curated"
+        ),
+        "metric_value_sample_id_field": Variable.get(
+            "metric_value_sample_id_field", default="samle_id"
+        ),
     }
 
 
@@ -46,6 +54,25 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
         f"raw-{logical_date_token}.ndjson",
     ]
     return "/".join(part for part in path_parts if part)
+
+
+def _build_curated_gcs_object_names(logical_date, grain_id, curated_prefix):
+    logical_date_path = logical_date.strftime("%Y/%m/%d/%H")
+    logical_date_token = logical_date.strftime("%Y%m%dT%H%M%S%z")
+    object_names = {}
+
+    for record_type in ("grains", "metrics", "metric_values"):
+        file_stem = record_type.replace("_", "-")
+        path_parts = [
+            curated_prefix.strip("/"),
+            record_type,
+            f"grain_id={grain_id}",
+            logical_date_path,
+            f"{file_stem}-{logical_date_token}.ndjson",
+        ]
+        object_names[record_type] = "/".join(part for part in path_parts if part)
+
+    return object_names
 
 
 def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
@@ -94,6 +121,53 @@ def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
     }
 
 
+def _transform_raw_data_to_curated_gcs(raw_location, logical_date):
+    config = _load_ingestion_config()
+    bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
+    grain_id = _require_variable("mongo_grain_id", config["mongo_grain_id"])
+    raw_bucket_name = raw_location["bucket"]
+    raw_object_name = raw_location["object"]
+    gcs_hook = GCSHook(gcp_conn_id=config["gcp_conn_id"])
+    raw_payload = gcs_hook.download(
+        bucket_name=raw_bucket_name,
+        object_name=raw_object_name,
+    )
+
+    if isinstance(raw_payload, bytes):
+        raw_payload = raw_payload.decode("utf-8")
+
+    transformed_records = transform_raw_market_data(
+        raw_payload,
+        sample_id_field=config["metric_value_sample_id_field"],
+    )
+    curated_object_names = _build_curated_gcs_object_names(
+        logical_date,
+        grain_id,
+        config["gcs_curated_prefix"],
+    )
+    uploaded_locations = {}
+
+    for record_type, records in transformed_records.items():
+        object_name = curated_object_names[record_type]
+        gcs_hook.upload(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            data=to_ndjson(records),
+            mime_type="application/x-ndjson",
+        )
+        uploaded_locations[record_type] = {
+            "bucket": bucket_name,
+            "object": object_name,
+            "record_count": len(records),
+        }
+        print(
+            f"Uploaded {len(records)} {record_type} records to "
+            f"gs://{bucket_name}/{object_name}"
+        )
+
+    return uploaded_locations
+
+
 with DAG(
     dag_id="mongo-data-ingestion",
     start_date=datetime(1996, 4, 1),
@@ -108,4 +182,10 @@ with DAG(
         end_date = start_date.add(days=1)
         return _extract_raw_data_to_gcs(start_date, end_date)
 
-    extract_raw_data_to_gcs()
+    @task()
+    def transform_raw_data_to_curated_gcs(raw_location):
+        context = get_current_context()
+        logical_date = context["logical_date"].start_of("day")
+        return _transform_raw_data_to_curated_gcs(raw_location, logical_date)
+
+    transform_raw_data_to_curated_gcs(extract_raw_data_to_gcs())
