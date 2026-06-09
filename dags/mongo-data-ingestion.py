@@ -3,7 +3,7 @@ from pendulum import datetime
 # pyrefly: ignore [missing-import]
 from airflow.sdk import DAG, get_current_context, task
 # pyrefly: ignore [missing-import]
-from airflow.models import Variable
+from airflow.sdk import Variable
 # pyrefly: ignore [missing-import]
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 # pyrefly: ignore [missing-import]
@@ -97,4 +97,4 @@ with DAG(
         context = get_current_context()
         return _extract_raw_data_to_gcs(context["logical_date"])
 
-    extract_raw_data_to_gcs()
+    extract_raw_data_to_gcs

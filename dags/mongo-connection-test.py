@@ -3,7 +3,7 @@ from datetime import datetime
 # pyrefly: ignore [missing-import]
 from airflow.sdk import DAG, task
 # pyrefly: ignore [missing-import]
-from airflow.models import Variable
+from airflow.sdk import Variable
 # pyrefly: ignore [missing-import]
 from airflow.providers.standard.operators.bash import BashOperator
 # pyrefly: ignore [missing-import]

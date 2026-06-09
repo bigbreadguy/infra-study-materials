@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Any
 
 # pyrefly: ignore [missing-import]
-from airflow.models import Variable
-# pyrefly: ignore [missing-import]
 from airflow.sdk import DAG, task
+# pyrefly: ignore [missing-import]
+from airflow.sdk import Variable
 
 
 DEFAULT_ACTION_PLAN_VARIABLE = "scraper_worker_action_plan"
