@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 try:
+    # pyrefly: ignore [missing-import]
     from google.api_core.exceptions import PreconditionFailed
 except ImportError:
     PreconditionFailed = None
