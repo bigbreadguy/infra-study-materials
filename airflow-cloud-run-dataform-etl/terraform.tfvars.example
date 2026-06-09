@@ -1,0 +1,77 @@
+project_id = "example-study-proj"
+
+# Set these to true only after completing the earlier GCP safety lessons.
+billing_budget_confirmed = false
+adc_credentials_reviewed = false
+remote_state_reviewed    = false
+
+region      = "asia-northeast3"
+location    = "asia-northeast3"
+environment = "dev"
+owner       = "kenny"
+
+extra_labels = {
+  curriculum = "terraform_basics"
+}
+
+# Optional: override the default raw + temp bucket set. Omit to use the
+# defaults defined in variables.tf. Only name_suffix is required per bucket.
+# buckets = {
+#   raw = {
+#     name_suffix        = "etl-raw"
+#     versioning_enabled = true
+#     retention_days     = 30
+#   }
+#   temp = {
+#     name_suffix    = "etl-temp"
+#     retention_days = 7
+#   }
+# }
+
+# Airflow GCS upload identity defaults. Local Airflow authenticates with the
+# orchestrator service account below, then uses this account as the
+# gcs_impersonation_chain for raw uploads.
+# airflow_service_account_id           = "sa-airflow-gcs-uploader"
+# airflow_service_account_display_name = "Airflow GCS uploader"
+# airflow_gcs_target_bucket_key        = "raw"
+#
+# Null uses the lesson's custom create/read/update role. The default also
+# includes storage.objects.delete because GCS replacement uploads need it.
+# Set airflow_gcs_allow_object_replacement=false only when Airflow always writes
+# unique object keys and never replaces an existing object.
+# airflow_gcs_bucket_role              = null
+# airflow_gcs_custom_cru_role_id       = "airflowGcsObjectCru"
+# airflow_gcs_allow_object_replacement = true
+#
+# Optional keyless impersonation grant for directly using the GCS upload
+# identity. The orchestrator is already granted impersonation by default.
+# airflow_service_account_impersonators = [
+#   "user:you@example.com",
+# ]
+#
+# Escape hatch only. If true, Terraform state will contain the private key for
+# the Airflow orchestrator service account.
+# create_airflow_service_account_key = false
+
+# BigQuery Bloomberg sample contract. Defaults create:
+#   dl_bloomberg_data.dim_grains
+#   dl_bloomberg_data.dim_metrics
+#   dl_bloomberg_data.fact_values
+# bigquery_dataset_id                         = "dl_bloomberg_data"
+# bigquery_dataset_delete_contents_on_destroy = false
+# bigquery_dataset_deletion_policy            = "PREVENT"
+# bigquery_table_deletion_protection          = true
+# bigquery_table_schema_contract              = "mongo"
+
+# Airflow GCP connection identity. It can impersonate the GCS uploader and
+# BigQuery transformer service accounts used by DAG task-level impersonation chains.
+# airflow_orchestrator_service_account_id           = "sa-airflow-orchestrator"
+# airflow_orchestrator_service_account_display_name = "Airflow BigQuery orchestrator"
+# airflow_orchestrator_impersonators = [
+#   "user:you@example.com",
+# ]
+
+# BigQuery transform-load identity and raw external-table scan prefix.
+# bigquery_transform_service_account_id           = "sa-airflow-bq-transformer"
+# bigquery_transform_service_account_display_name = "Airflow BigQuery transformer"
+# raw_object_prefix                               = "bloomberg/raw"

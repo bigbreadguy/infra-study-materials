@@ -59,6 +59,10 @@ backend.tf
 !example.tfvars
 !terraform.tfvars.example
 
+# Dataform project settings can contain project ids, dataset ids, bucket names,
+# and environment-specific compile vars. Commit the template only.
+airflow-cloud-run-dataform-etl/dataform/workflow_settings.yaml
+
 # Override files — local-only overrides, not meant to be shared
 override.tf
 override.tf.json
@@ -80,6 +84,17 @@ terraform.rc
 .codex/**/*.local.json
 .agents/settings.local.json
 .agents/**/*.local.json
+
+# Local exploratory scripts that can contain personal connection details or
+# collection-specific assumptions.
+scripts/local/inspect_mongo_dataform_candidates.py
+.python-version
+pyproject.toml
+uv.lock
+
+# Python bytecode from local helper runs.
+__pycache__/
+*.py[cod]
 
 # ---------------------------------------------------------------------------
 # Editor / OS noise

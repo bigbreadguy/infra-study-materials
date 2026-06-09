@@ -1,6 +1,0 @@
-terraform {
-  backend "gcs" {
-    bucket = "replace-with-output-state-bucket-name"
-    prefix = "gcp-provider-practice/05-gcs-remote-state-bootstrap"
-  }
-}

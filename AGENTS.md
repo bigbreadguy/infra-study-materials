@@ -66,4 +66,19 @@ infrastructure; favor clarity, annotated examples, and explanations over tersene
 - Repo initialized and study context documented (this file).
 - Repo hygiene in place: `.gitignore` covers Terraform state/plans, `*.tfvars`,
   GCP credential files, and the lock file is intentionally kept tracked.
-- No Terraform code written yet. Next: start Goal #1 (Terraform basics).
+- `airflow-cloud-run-dataform-etl/` holds an Airflow + GCS + BigQuery
+  transform-load lesson. It creates a `for_each` map of `raw` + `temp` buckets,
+  a dedicated Airflow GCS service account with a custom create/read/update
+  bucket role, the `dl_bloomberg_data` BigQuery dataset with `dim_grains`,
+  `dim_metrics`, and `fact_values`, an Airflow BigQuery transformer service
+  account, and a separate Airflow orchestrator service account. The optional
+  service account key path is disabled by default and documented as a state
+  risk.
+- `airflow-cloud-run-dataform-etl/PLAN.md` is the phased roadmap (Phase 1 GCS →
+  Phase 2 BigQuery → Phase 3 remaining identities/IAM → Phase 4 Cloud Run →
+  Phase 5 Python/Airflow BigQuery transform-load → Phase 6 Secret
+  Manager/Airflow wiring) synthesized from a data-architect / security-IAM /
+  platform-Terraform expert review.
+- Next data-layer step: run the Airflow DAG against the applied BigQuery
+  resources and verify idempotent raw external table refreshes plus dimension
+  and fact upserts.

@@ -1,0 +1,37 @@
+# GCS remote backend for this lesson's Terraform state.
+#
+# Copy this file to `backend.tf` to enable the remote backend. `backend.tf` is
+# gitignored (see repo .gitignore), so your real bucket name never gets
+# committed; this `.example` is the tracked record of the pattern.
+#
+# WHY THE BUCKET NAME IS NOT IN THE BLOCK
+# A backend block is read before variables are evaluated, so it CANNOT use
+# var.project_id, locals, or any ${interpolation}. The bucket is therefore
+# omitted here (partial configuration) and supplied at init time, which is how
+# we still format it from the project id:
+#
+#   PROJECT_ID="your-study-project"
+#   terraform init -backend-config="bucket=${PROJECT_ID}-tfstate"
+#
+# Because backend.tf is gitignored, you may instead hardcode
+# `bucket = "your-project-tfstate"` in your local copy — it will not be
+# committed. Partial config keeps the file project-agnostic and reusable.
+#
+# ONE-TIME BOOTSTRAP
+# The config cannot create the bucket that holds its own state, so create it
+# out-of-band, private and versioned:
+#
+#   gcloud storage buckets create "gs://${PROJECT_ID}-tfstate" \
+#     --project="${PROJECT_ID}" --location=us-central1 \
+#     --uniform-bucket-level-access --public-access-prevention
+#   gcloud storage buckets update "gs://${PROJECT_ID}-tfstate" --versioning
+#
+# The GCS backend provides state locking automatically (no extra lock table).
+# To fall back to local state, remove backend.tf and re-run `terraform init`.
+
+terraform {
+  backend "gcs" {
+    # bucket = "<project_id>-tfstate"   # supplied at init via -backend-config
+    prefix = "airflow-etl/dev" # change the env segment per environment
+  }
+}

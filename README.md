@@ -7,8 +7,8 @@ guardrails.
 
 Start with [PLAN.md](./PLAN.md). It defines the workshop sequence, local stack
 options, GCP practice track, safety rules, expected repository shape, and next
-implementation steps, including the later Airflow, Cloud Run, BigQuery, and
-Dataform ETL planning extension. The local workshop lessons are
+implementation steps, including the later Airflow, Cloud Run, and BigQuery
+transform-load planning extension. The local workshop lessons are
 [01-core-hcl-local](./01-core-hcl-local/),
 [02-modules-and-composition](./02-modules-and-composition/), and
 [03-docker-stack](./03-docker-stack/). The GCP provider practice track starts at
@@ -25,7 +25,7 @@ Confidence: 96/100.
 5. Practice GCP provider configuration, read-only data sources, Cloud Storage,
    IAM without key files, and GCS remote state.
 6. Implement an advanced local Airflow orchestration pattern that uses Cloud Run
-   Jobs, GCS, BigQuery, and Dataform without committing secrets or target data.
+   Jobs, GCS, and BigQuery without committing secrets or target data.
 
 Confidence: 95/100.
 
