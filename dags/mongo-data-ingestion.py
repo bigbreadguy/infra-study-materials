@@ -90,7 +90,7 @@ def _extract_raw_data_to_gcs(logical_date):
 with DAG(
     dag_id="mongo-data-ingestion",
     start_date=datetime(2023, 7, 1),
-    schedule="@hourly",
+    schedule=None,
 ) as dag:
     @task()
     def extract_raw_data_to_gcs():
