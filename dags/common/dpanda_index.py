@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 import json
-import uuid
 from datetime import datetime, timezone
 from typing import Any
 
 
-DEFAULT_SAMPLE_ID_FIELD = "samle_id"
+DEFAULT_SAMPLE_ID_FIELD = "sample_id"
 TIME_GRAIN = "D"
+RAW_CREATED_AT_FIELD = "createdAt"
+RAW_DATA_FIELD = "data"
+RAW_DATASET_ID_FIELD = "datasetId"
+RAW_GRAIN_ID_FIELD = "grainId"
+RAW_LOGICAL_DATE_FIELD = "dt"
+RAW_SAMPLE_ID_FIELD = "_id"
+RAW_SCHEMA_FIELD = "_schema"
+RAW_TIMESTAMP_FIELD = "ts"
+RAW_UPDATED_AT_FIELD = "updatedAt"
 
 GRAIN_DESCRIPTIONS = {
     "SX5E_Index": "유로 스톡스 50 지수, SX5E",
@@ -122,26 +130,16 @@ def _required_mapping(
 
 
 def _logical_date(document: dict[str, Any], data: dict[str, Any], line_number: int) -> str:
-    data_date = data.get("dt")
+    data_date = data.get(RAW_LOGICAL_DATE_FIELD)
     if isinstance(data_date, str) and data_date:
         return data_date
 
-    ts = document.get("ts")
+    ts = document.get(RAW_TIMESTAMP_FIELD)
     if isinstance(ts, str) and len(ts) >= 10:
         return ts[:10]
 
     raise ValueError(
         f"Raw document line {line_number} requires data.dt or ISO timestamp ts"
-    )
-
-
-def _metric_id(dataset_id: str, grain_name: str, metric_key: str) -> str:
-    return str(
-        uuid.uuid5(
-            uuid.NAMESPACE_URL,
-            f"infra-study-materials:bloomberg-market-data:{dataset_id}:"
-            f"{grain_name}:{metric_key}",
-        )
     )
 
 
@@ -177,17 +175,17 @@ def transform_raw_market_data(
     metric_value_records = []
 
     for line_number, document in enumerate(_raw_documents(raw_payload), start=1):
-        data = _required_mapping(document, "data", line_number)
-        sample_id = _required_text(document, "_id", line_number)
-        dataset_id = _required_text(document, "datasetId", line_number)
-        grain_name = _required_text(document, "grainId", line_number)
-        updated_at = _required_text(document, "updatedAt", line_number)
+        data = _required_mapping(document, RAW_DATA_FIELD, line_number)
+        sample_id = _required_text(document, RAW_SAMPLE_ID_FIELD, line_number)
+        dataset_id = _required_text(document, RAW_DATASET_ID_FIELD, line_number)
+        grain_name = _required_text(document, RAW_GRAIN_ID_FIELD, line_number)
+        updated_at = _required_text(document, RAW_UPDATED_AT_FIELD, line_number)
         logical_date = _logical_date(document, data, line_number)
 
         grain_records.setdefault(
             dataset_id,
             {
-                "id": dataset_id,
+                "dataset_id": dataset_id,
                 "name": grain_name,
                 "description": GRAIN_DESCRIPTIONS.get(grain_name, grain_name),
             },
@@ -197,22 +195,21 @@ def transform_raw_market_data(
             if metric_key not in data or data[metric_key] is None:
                 continue
 
-            metric_id = _metric_id(dataset_id, grain_name, metric_key)
+            metric_name = _metric_name(grain_name, metric_key)
             metric_records.setdefault(
-                metric_id,
+                metric_name,
                 {
-                    "id": metric_id,
-                    "grain_id": dataset_id,
-                    "name": _metric_name(grain_name, metric_key),
+                    "grain_dataset_id": dataset_id,
+                    "name": metric_name,
                     "description": _metric_description(grain_name, metric_key),
                 },
             )
             metric_value_records.append(
                 {
-                    "id": metric_id,
                     sample_id_field: sample_id,
-                    "grain_id": dataset_id,
+                    "grain_dataset_id": dataset_id,
                     "grain_name": grain_name,
+                    "metric_name": metric_name,
                     "logical_date": logical_date,
                     "time_grain": TIME_GRAIN,
                     "metric_value": _metric_value(data[metric_key]),

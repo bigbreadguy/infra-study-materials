@@ -11,7 +11,8 @@ from airflow.providers.mongo.hooks.mongo import MongoHook
 # pyrefly: ignore [missing-import]
 from bson import json_util
 
-from common.bloomberg_index import to_ndjson, transform_raw_market_data
+from common.dpanda_index import to_ndjson, transform_raw_market_data
+from common.gcs_object import upload_unique_object
 
 
 def _require_variable(name, value):
@@ -26,7 +27,7 @@ def _load_ingestion_config():
             "mongo_conn_id", default="mongo-default-connection"
         ),
         "mongo_database_name": Variable.get(
-            "mongo_database_name", default="bloomberg"
+            "mongo_database_name", default="dpanda"
         ),
         "mongo_collection_name": Variable.get(
             "mongo_collection_name", default="raw_data"
@@ -34,12 +35,12 @@ def _load_ingestion_config():
         "mongo_grain_id": Variable.get("mongo_grain_id", default=""),
         "gcp_conn_id": Variable.get("gcp_conn_id", default="google_cloud_default"),
         "gcs_bucket_name": Variable.get("gcs_bucket_name", default=""),
-        "gcs_raw_prefix": Variable.get("gcs_raw_prefix", default="bloomberg/raw"),
+        "gcs_raw_prefix": Variable.get("gcs_raw_prefix", default="dpanda/raw"),
         "gcs_curated_prefix": Variable.get(
-            "gcs_curated_prefix", default="bloomberg/curated"
+            "gcs_curated_prefix", default="dpanda/curated"
         ),
         "metric_value_sample_id_field": Variable.get(
-            "metric_value_sample_id_field", default="samle_id"
+            "metric_value_sample_id_field", default="sample_id"
         ),
     }
 
@@ -107,16 +108,21 @@ def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
     if payload:
         payload = f"{payload}\n"
 
-    GCSHook(gcp_conn_id=config["gcp_conn_id"]).upload(
+    gcs_hook = GCSHook(gcp_conn_id=config["gcp_conn_id"])
+    uploaded_object_name = upload_unique_object(
+        gcs_hook,
         bucket_name=bucket_name,
         object_name=object_name,
         data=payload,
         mime_type="application/x-ndjson",
     )
-    print(f"Uploaded {len(lines)} documents to gs://{bucket_name}/{object_name}")
+    print(
+        f"Uploaded {len(lines)} documents to "
+        f"gs://{bucket_name}/{uploaded_object_name}"
+    )
     return {
         "bucket": bucket_name,
-        "object": object_name,
+        "object": uploaded_object_name,
         "document_count": len(lines),
     }
 
@@ -149,7 +155,8 @@ def _transform_raw_data_to_curated_gcs(raw_location, logical_date):
 
     for record_type, records in transformed_records.items():
         object_name = curated_object_names[record_type]
-        gcs_hook.upload(
+        uploaded_object_name = upload_unique_object(
+            gcs_hook,
             bucket_name=bucket_name,
             object_name=object_name,
             data=to_ndjson(records),
@@ -157,12 +164,12 @@ def _transform_raw_data_to_curated_gcs(raw_location, logical_date):
         )
         uploaded_locations[record_type] = {
             "bucket": bucket_name,
-            "object": object_name,
+            "object": uploaded_object_name,
             "record_count": len(records),
         }
         print(
             f"Uploaded {len(records)} {record_type} records to "
-            f"gs://{bucket_name}/{object_name}"
+            f"gs://{bucket_name}/{uploaded_object_name}"
         )
 
     return uploaded_locations

@@ -52,28 +52,38 @@ Example placeholder shape:
 
 Do not commit real target URLs, selectors, headers, cookies, credentials, response payloads, or private action plans. Use Airflow Variables, Airflow Connections, a secrets backend, or ignored local files for those values.
 
-## Bloomberg Raw Data Transform
+## DPanda Raw Data Transform
 
 The `mongo-data-ingestion` DAG now writes Mongo raw data to GCS and then transforms
 that raw NDJSON into normalized curated NDJSON objects.
-The shared transform code lives in `dags/common/bloomberg_index.py`; `pyproject.toml`
+The shared transform code lives in `dags/common/dpanda_index.py`; `pyproject.toml`
 sets the Pyrefly search path to `dags` so that DAG-local package imports resolve
 consistently during local checks.
+Curated GCS records do not include database-owned `id` fields. BigQuery assigns
+final database IDs during downstream loading or modeling; curated data keeps
+source identifiers and natural references such as `dataset_id`,
+`grain_dataset_id`, `sample_id`, and `metric_name`.
 
 Configure these Airflow Variables:
 
 - `gcs_bucket_name`: target GCS bucket. Required.
 - `mongo_grain_id`: Mongo `grainId` to extract and transform. Required.
-- `gcs_raw_prefix`: raw output prefix. Defaults to `bloomberg/raw`.
-- `gcs_curated_prefix`: curated output prefix. Defaults to `bloomberg/curated`.
+- `gcs_raw_prefix`: raw output prefix. Defaults to `dpanda/raw`.
+- `gcs_curated_prefix`: curated output prefix. Defaults to `dpanda/curated`.
 - `metric_value_sample_id_field`: sample id field name in metric value records.
-  Defaults to `samle_id` to match the requested downstream schema.
+  Defaults to `sample_id`. The value is copied from Mongo `_id` and identifies
+  each raw sample fetched from Mongo.
 
 For each run, the transform task writes:
 
-- `grains/.../*.ndjson`: dataset/grain records using `datasetId` as `id`.
-- `metrics/.../*.ndjson`: metric definitions with deterministic UUIDv5 `id`
-  values, for example `SX5E_Index_Open`.
-- `metric_values/.../*.ndjson`: metric observations with the metric UUID as `id`,
-  Mongo `_id` as the sample id field, daily `logical_date`, and UTC
-  `ingested_at`.
+- `grains/.../*.ndjson`: dataset/grain records using Mongo `datasetId` as
+  `dataset_id`.
+- `metrics/.../*.ndjson`: metric definitions keyed naturally by
+  `grain_dataset_id` and `name`, for example `ANON_Index_Open`.
+- `metric_values/.../*.ndjson`: metric observations with Mongo `_id` as
+  `sample_id`, `metric_name` as the natural metric reference, daily
+  `logical_date`, and UTC `ingested_at`.
+
+The DAG does not overwrite existing GCS objects. If the planned object name
+already exists, the upload writes another object under the same path by adding a
+numeric suffix before the file extension, for example `raw-19960416-001.ndjson`.
