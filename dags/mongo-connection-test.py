@@ -1,15 +1,13 @@
 from datetime import datetime
 
 # pyrefly: ignore [missing-import]
-from airflow.sdk import DAG, task
-# pyrefly: ignore [missing-import]
-from airflow.sdk import Variable
+from airflow.sdk import DAG, task, Variable
 # pyrefly: ignore [missing-import]
 from airflow.providers.standard.operators.bash import BashOperator
 # pyrefly: ignore [missing-import]
 from airflow.providers.mongo.hooks.mongo import MongoHook
 
-mongo_conn_id = Variable.get("mongo_conn_id", default_var="mongo-default-connection")
+mongo_conn_id = Variable.get("mongo_conn_id", default="mongo-default-connection")
 
 # A Dag represents a workflow, a collection of tasks
 with DAG(

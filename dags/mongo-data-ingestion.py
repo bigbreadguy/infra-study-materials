@@ -21,18 +21,18 @@ def _require_variable(name, value):
 def _load_ingestion_config():
     return {
         "mongo_conn_id": Variable.get(
-            "mongo_conn_id", default_var="mongo-default-connection"
+            "mongo_conn_id", default="mongo-default-connection"
         ),
         "mongo_database_name": Variable.get(
-            "mongo_database_name", default_var="bloomberg"
+            "mongo_database_name", default="bloomberg"
         ),
         "mongo_collection_name": Variable.get(
-            "mongo_collection_name", default_var="raw_data"
+            "mongo_collection_name", default="raw_data"
         ),
-        "mongo_grain_id": Variable.get("mongo_grain_id", default_var=""),
-        "gcp_conn_id": Variable.get("gcp_conn_id", default_var="google_cloud_default"),
-        "gcs_bucket_name": Variable.get("gcs_bucket_name", default_var=""),
-        "gcs_raw_prefix": Variable.get("gcs_raw_prefix", default_var="bloomberg/raw"),
+        "mongo_grain_id": Variable.get("mongo_grain_id", default=""),
+        "gcp_conn_id": Variable.get("gcp_conn_id", default="google_cloud_default"),
+        "gcs_bucket_name": Variable.get("gcs_bucket_name", default=""),
+        "gcs_raw_prefix": Variable.get("gcs_raw_prefix", default="bloomberg/raw"),
     }
 
 
@@ -97,4 +97,4 @@ with DAG(
         context = get_current_context()
         return _extract_raw_data_to_gcs(context["logical_date"])
 
-    extract_raw_data_to_gcs
+    extract_raw_data_to_gcs()
