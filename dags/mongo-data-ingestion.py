@@ -103,9 +103,9 @@ with DAG(
     @task()
     def extract_raw_data_to_gcs():
         context = get_current_context()
-        return _extract_raw_data_to_gcs(
-            context["data_interval_start"],
-            context["data_interval_end"]
-        )
+        logical_date = context["logical_date"]
+        start_date = logical_date.start_of("day")
+        end_date = start_date.add(days=1)
+        return _extract_raw_data_to_gcs(start_date, end_date)
 
     extract_raw_data_to_gcs()
