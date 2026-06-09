@@ -53,6 +53,26 @@ def _upload_object_if_absent(
     )
 
 
+def upload_replacing_object(
+    gcs_hook: Any,
+    *,
+    bucket_name: str,
+    object_name: str,
+    data: str,
+    mime_type: str,
+) -> str:
+    if not bucket_name:
+        raise ValueError("bucket_name must be a non-empty string")
+    if not object_name:
+        raise ValueError("object_name must be a non-empty string")
+
+    client = gcs_hook.get_conn()
+    blob = client.bucket(bucket_name).blob(object_name)
+    blob.upload_from_string(data, content_type=mime_type)
+
+    return object_name
+
+
 def _validate_upload_inputs(
     *,
     bucket_name: str,

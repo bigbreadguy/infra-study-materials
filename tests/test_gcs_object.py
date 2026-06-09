@@ -7,7 +7,11 @@ from unittest import TestCase
 
 sys.path.append(str(Path(__file__).resolve().parents[1] / "dags"))
 
-from common.gcs_object import candidate_object_name, upload_unique_object
+from common.gcs_object import (
+    candidate_object_name,
+    upload_replacing_object,
+    upload_unique_object,
+)
 
 
 class PreconditionFailed(Exception):
@@ -24,11 +28,12 @@ class FakeBlob:
         data: str,
         *,
         content_type: str,
-        if_generation_match: int,
+        if_generation_match: int | None = None,
     ) -> None:
-        if if_generation_match != 0:
-            raise ValueError("FakeBlob requires create-only upload precondition")
-        if self.object_name in self.bucket.existing_objects:
+        if (
+            if_generation_match == 0
+            and self.object_name in self.bucket.existing_objects
+        ):
             raise PreconditionFailed
 
         self.bucket.existing_objects.add(self.object_name)
@@ -108,6 +113,31 @@ class GCSObjectTest(TestCase):
                     "data": "payload",
                     "mime_type": "application/x-ndjson",
                     "if_generation_match": 0,
+                }
+            ],
+        )
+
+    def test_upload_replacing_object_uses_requested_name(self):
+        gcs_hook = FakeGCSHook({"prefix/raw-19960416.ndjson"})
+
+        object_name = upload_replacing_object(
+            gcs_hook,
+            bucket_name="bucket",
+            object_name="prefix/raw-19960416.ndjson",
+            data="replacement payload",
+            mime_type="application/x-ndjson",
+        )
+
+        self.assertEqual(object_name, "prefix/raw-19960416.ndjson")
+        self.assertEqual(
+            gcs_hook.uploads,
+            [
+                {
+                    "bucket_name": "bucket",
+                    "object_name": "prefix/raw-19960416.ndjson",
+                    "data": "replacement payload",
+                    "mime_type": "application/x-ndjson",
+                    "if_generation_match": None,
                 }
             ],
         )

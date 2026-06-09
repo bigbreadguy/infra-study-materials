@@ -52,38 +52,76 @@ Example placeholder shape:
 
 Do not commit real target URLs, selectors, headers, cookies, credentials, response payloads, or private action plans. Use Airflow Variables, Airflow Connections, a secrets backend, or ignored local files for those values.
 
-## DPanda Raw Data Transform
+## Bloomberg Raw Data Ingestion
 
-The `mongo-data-ingestion` DAG now writes Mongo raw data to GCS and then transforms
-that raw NDJSON into normalized curated NDJSON objects.
-The shared transform code lives in `dags/common/dpanda_index.py`; `pyproject.toml`
-sets the Pyrefly search path to `dags` so that DAG-local package imports resolve
-consistently during local checks.
-Curated GCS records do not include database-owned `id` fields. BigQuery assigns
-final database IDs during downstream loading or modeling; curated data keeps
-source identifiers and natural references such as `dataset_id`,
-`grain_dataset_id`, `sample_id`, and `metric_name`.
+The `mongo-data-ingestion` DAG extracts Mongo/Bloomberg sample rows, uploads raw
+NDJSON to GCS, and then triggers the configured Dataform workflow. Airflow does
+not write to BigQuery and does not own SQL upsert logic for `dl_securities`.
+Dataform normalizes the raw records into `dim_grains`, `dim_metrics`, and
+`fact_market_indexes`.
 
 Configure these Airflow Variables:
 
-- `gcs_bucket_name`: target GCS bucket. Required.
-- `mongo_grain_id`: Mongo `grainId` to extract and transform. Required.
-- `gcs_raw_prefix`: raw output prefix. Defaults to `dpanda/raw`.
-- `gcs_curated_prefix`: curated output prefix. Defaults to `dpanda/curated`.
-- `metric_value_sample_id_field`: sample id field name in metric value records.
-  Defaults to `sample_id`. The value is copied from Mongo `_id` and identifies
-  each raw sample fetched from Mongo.
+- `mongo_conn_id`: Mongo Airflow Connection id. Required.
+- `mongo_database_name`: Mongo database name. Required.
+- `mongo_collection_name`: Mongo collection name. Required.
+- `mongo_grain_id`: Mongo `grainId` to extract. Required.
+- `gcp_conn_id`: Google Cloud Airflow Connection id. Required.
+- `gcs_bucket_name`: raw GCS bucket. Required.
+- `gcs_raw_prefix`: raw object prefix, for example `bloomberg/raw`. Required.
+- `gcs_impersonation_chain`: service account to impersonate for raw GCS upload.
+  Required.
+- `dataform_project_id`: Dataform project id. Required.
+- `dataform_region`: Dataform repository region. Required.
+- `dataform_repository_id`: Dataform repository id. Required.
+- `dataform_workflow_config`: fully-qualified Dataform workflow config name.
+  Required.
+- `dataform_impersonation_chain`: service account to impersonate for Dataform
+  workflow orchestration. Required.
+- `dataform_wait_time_seconds`: polling interval for Dataform completion.
+  Optional; defaults to `10`.
+- `dataform_timeout_seconds`: Dataform wait timeout. Optional; blank means use
+  provider default behavior.
 
-For each run, the transform task writes:
+The raw object path is deterministic:
 
-- `grains/.../*.ndjson`: dataset/grain records using Mongo `datasetId` as
-  `dataset_id`.
-- `metrics/.../*.ndjson`: metric definitions keyed naturally by
-  `grain_dataset_id` and `name`, for example `ANON_Index_Open`.
-- `metric_values/.../*.ndjson`: metric observations with Mongo `_id` as
-  `sample_id`, `metric_name` as the natural metric reference, daily
-  `logical_date`, and UTC `ingested_at`.
+```text
+<gcs_raw_prefix>/grain_id=<grain_id>/YYYY/MM/DD/HH/raw-YYYYMMDDTHHMMSS+0000.ndjson
+```
 
-The DAG does not overwrite existing GCS objects. If the planned object name
-already exists, the upload writes another object under the same path by adding a
-numeric suffix before the file extension, for example `raw-19960416-001.ndjson`.
+For example:
+
+```text
+bloomberg/raw/grain_id=SX5E_Index/1996/04/16/00/raw-19960416T000000+0000.ndjson
+```
+
+Reruns upload to the same deterministic object key and may replace the existing
+object. The impersonated GCS uploader service account therefore needs object
+replacement permission on the raw bucket. If an upload fails with a missing
+`storage.objects.delete` permission, check that Terraform has completed the
+staged IAM apply that restores that permission.
+
+The current DAG triggers a Dataform workflow config after the raw upload. It
+does not pass the uploaded object path as a per-run Dataform variable, so the
+Dataform SQLX actions should resolve raw files from the configured bucket and
+prefix. If Dataform must process only the exact object uploaded by a single DAG
+run, change the orchestration design to create a per-run Dataform compilation
+result with compilation vars such as `raw_uri`, then invoke that compilation
+result instead of invoking the workflow config directly.
+
+If impersonation fails with `iam.serviceAccounts.getAccessToken`, the Airflow
+runtime ADC principal cannot impersonate the configured service account. Grant
+that principal `roles/iam.serviceAccountTokenCreator` on the GCS uploader service
+account for upload tasks, and on the Dataform orchestration service account for
+Dataform trigger tasks.
+
+Do not commit service account keys, Mongo credentials, Dataform
+`workflow_settings.yaml` contents, or plaintext secrets. Use ADC, attached
+service accounts, impersonation, Secret Manager, Airflow Connections, Airflow
+Variables, or environment-provided credentials.
+
+Terraform/Dataform owns the `dl_securities` BigQuery schema and SQLX MERGE
+logic. The current schema migration is staged: first disable deletion protection
+on legacy tables, then replace them with the Mongo/Dataform contract, then
+re-enable deletion protection. Until that finishes, Airflow can upload raw data,
+but the Dataform upsert may fail or target the wrong schema.
