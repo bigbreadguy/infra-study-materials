@@ -210,7 +210,9 @@ def _run_bigquery_step(upstream_result, step_name, runner):
 
 with DAG(
     dag_id="mongo-data-ingestion",
-    start_date=datetime(1996, 4, 1),
+    # Logical dates are managed in zulu time because the source database
+    # keys day grained rows by utc timestamps.
+    start_date=datetime(1996, 4, 1, tz="UTC"),
     schedule="@daily",
     catchup=False,
     # Concurrent runs can double-insert the same merge key through BigQuery
@@ -232,12 +234,17 @@ with DAG(
     @task()
     def extract_raw_data_to_gcs(grain_id: str):
         context = get_current_context()
-        # Source data is day grained, and cron trigger timetables hand manual
-        # runs a zero width data interval, so always extract the full utc day
-        # containing the interval start.
+        # Stick to the date only: resolve the run to its zulu calendar date
+        # and extract that full utc day. Trigger logical dates must be given
+        # as utc midnights or the run resolves to the prior zulu date.
         interval_start = context["data_interval_start"] or context["logical_date"]
         start_date = interval_start.in_timezone("UTC").start_of("day")
         end_date = start_date.add(days=1)
+        if interval_start != start_date:
+            print(
+                f"Logical date {interval_start} is not a zulu midnight; "
+                f"resolved to zulu date {start_date.date()}"
+            )
         return _extract_raw_data_to_gcs(grain_id, start_date, end_date)
 
     @task(task_id="raw_data_samples")

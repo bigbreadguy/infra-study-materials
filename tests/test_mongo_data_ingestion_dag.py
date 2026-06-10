@@ -30,6 +30,7 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         )
         self.assertIn('in_timezone("UTC").start_of("day")', dag_source)
         self.assertIn("start_date.add(days=1)", dag_source)
+        self.assertIn('start_date=datetime(1996, 4, 1, tz="UTC")', dag_source)
 
     def test_dag_scopes_raw_inputs_through_config_without_module_patch(self):
         dag_source = DAG_FILE.read_text()

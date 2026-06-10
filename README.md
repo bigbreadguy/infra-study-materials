@@ -104,11 +104,14 @@ The current DAG runs the BigQuery transform-load steps in parallel per grain
 id and recreates one raw external table per grain after each raw upload. Each
 external table points at the exact object the run uploaded, so a run only
 reprocesses its own data interval; clearing a past run in Airflow backfills
-that interval. The source data is day grained, and manual runs under cron
-trigger timetables carry a zero width data interval, so extraction always
-covers the full UTC day containing the run's data interval start. Only one
-DAG run may be active at a time, and tasks retry twice with exponential
-backoff.
+that interval. Logical dates are managed in Zulu time because the source
+database keys day grained rows by UTC timestamps: each run resolves to its
+UTC calendar date and extracts that full UTC day. When triggering a manual
+replay run, supply the logical date as a UTC midnight (switch the Airflow UI
+clock to UTC or pass an ISO timestamp with a `Z` suffix); a logical date at
+any other wall-clock offset resolves to the prior Zulu date and the task
+logs a notice. Only one DAG run may be active at a time, and tasks retry
+twice with exponential backoff.
 
 After recreating the external table, the script asserts that the external
 table row count matches the document count extracted from Mongo, so silent
