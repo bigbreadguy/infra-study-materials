@@ -101,7 +101,16 @@ replacement permission on the raw bucket. If an upload fails with a missing
 staged IAM apply that restores that permission.
 
 The current DAG runs the BigQuery transform-load steps in parallel per grain
-id and recreates one raw external table per grain after each raw upload.
+id and recreates one raw external table per grain after each raw upload. Each
+external table points at the exact object the run uploaded, so a run only
+reprocesses its own data interval; clearing a past run in Airflow backfills
+that interval. The extraction window comes from the task context data
+interval, only one DAG run may be active at a time, and tasks retry twice
+with exponential backoff.
+
+After recreating the external table, the script asserts that the external
+table row count matches the document count extracted from Mongo, so silent
+upload truncation fails the run instead of merging partial data.
 
 The `fact_values` script manages duplicate-row conflicts on its own:
 
