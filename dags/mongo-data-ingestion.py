@@ -81,10 +81,9 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
     return "/".join(part for part in path_parts if part)
 
 
-def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
+def _extract_raw_data_to_gcs(grain_id, data_interval_start, data_interval_end):
     config = _load_ingestion_config()
     bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
-    grain_id = _require_variable("mongo_grain_id", config["mongo_grain_id"])
     object_name = _build_gcs_object_name(
         data_interval_start, grain_id, config["gcs_raw_prefix"]
     )
@@ -130,6 +129,7 @@ def _extract_raw_data_to_gcs(data_interval_start, data_interval_end):
         "bucket": bucket_name,
         "object": uploaded_object_name,
         "document_count": len(lines),
+        "grain_id": grain_id,
     }
 
 
@@ -169,8 +169,23 @@ def _raw_location_from_upstream(upstream_result):
 
 
 def _run_bigquery_step(upstream_result, step_name, runner):
+    import re
+    import dags.common.bigquery_market_index_sql as bq_sql
+
     raw_location = _raw_location_from_upstream(upstream_result)
+    grain_id = raw_location.get("grain_id")
     config = _load_ingestion_config()
+
+    if grain_id:
+        # Override the external table name globally for this task invocation to prevent parallel conflicts
+        normalized_grain_id = re.sub(r"[^a-zA-Z0-9]", "_", grain_id)
+        bq_sql.RAW_DATA_SAMPLES_TABLE = f"raw_data_samples_{normalized_grain_id}"
+
+        # Override raw_gcs_uri to point only to this grain's subfolder
+        gcs_bucket_name = config["gcs_bucket_name"]
+        gcs_raw_prefix = config["gcs_raw_prefix"].strip("/")
+        config["raw_gcs_uri"] = f"gs://{gcs_bucket_name}/{gcs_raw_prefix}/grain_id={grain_id}/*"
+
     transform_config = _bigquery_transform_config(config)
     client = _bigquery_client(config)
     result = runner(client, transform_config)
@@ -195,12 +210,19 @@ with DAG(
     catchup=False,
 ) as dag:
     @task()
-    def extract_raw_data_to_gcs():
+    def get_grain_ids() -> list[str]:
+        grain_ids_str = Variable.get("mongo_grain_id", default="")
+        if not grain_ids_str:
+            raise ValueError("Airflow Variable 'mongo_grain_id' must be set")
+        return [g.strip() for g in grain_ids_str.split(",") if g.strip()]
+
+    @task()
+    def extract_raw_data_to_gcs(grain_id: str):
         context = get_current_context()
         logical_date = context["logical_date"]
         start_date = logical_date.start_of("day")
         end_date = start_date.add(days=1)
-        return _extract_raw_data_to_gcs(start_date, end_date)
+        return _extract_raw_data_to_gcs(grain_id, start_date, end_date)
 
     @task(task_id="raw_data_samples")
     def create_raw_data_samples(raw_location):
@@ -234,8 +256,9 @@ with DAG(
             run_merge_fact_values,
         )
 
-    raw_location = extract_raw_data_to_gcs()
-    raw_table = create_raw_data_samples(raw_location)
-    grains = merge_dim_grains(raw_table)
-    metrics = merge_dim_metrics(grains)
-    merge_fact_values(metrics)
+    grain_ids = get_grain_ids()
+    raw_location = extract_raw_data_to_gcs.expand(grain_id=grain_ids)
+    raw_table = create_raw_data_samples.expand(raw_location=raw_location)
+    grains = merge_dim_grains.expand(upstream_result=raw_table)
+    metrics = merge_dim_metrics.expand(upstream_result=grains)
+    merge_fact_values.expand(upstream_result=metrics)

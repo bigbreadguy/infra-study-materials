@@ -37,6 +37,7 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertEqual(dag.dag_id, "mongo-data-ingestion")
         self.assertEqual(
             {
+                "get_grain_ids",
                 "extract_raw_data_to_gcs",
                 "raw_data_samples",
                 "dim_grains",
