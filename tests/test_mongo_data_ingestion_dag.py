@@ -22,10 +22,11 @@ class MongoDataIngestionDagTest(unittest.TestCase):
 
         self.assertIn("max_active_runs=1", dag_source)
         self.assertIn('"retries": 2', dag_source)
-        # Manual runs under cron trigger timetables carry zero width data
-        # intervals, so the extraction window must expand to the full utc day.
+        # Cron trigger timetables derive the data interval from the trigger
+        # wall clock, so the logical date must drive the extraction window
+        # and expand to the full utc day.
         self.assertIn(
-            'context["data_interval_start"] or context["logical_date"]',
+            'context["logical_date"] or context["data_interval_start"]',
             dag_source,
         )
         self.assertIn('in_timezone("UTC").start_of("day")', dag_source)

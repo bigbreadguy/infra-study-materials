@@ -235,14 +235,17 @@ with DAG(
     def extract_raw_data_to_gcs(grain_id: str):
         context = get_current_context()
         # Stick to the date only: resolve the run to its zulu calendar date
-        # and extract that full utc day. Trigger logical dates must be given
-        # as utc midnights or the run resolves to the prior zulu date.
-        interval_start = context["data_interval_start"] or context["logical_date"]
-        start_date = interval_start.in_timezone("UTC").start_of("day")
+        # and extract that full utc day. The logical date is authoritative
+        # because cron trigger timetables derive the data interval from the
+        # trigger wall clock, not from an explicitly supplied logical date.
+        # Trigger logical dates must be given as utc midnights or the run
+        # resolves to the prior zulu date.
+        run_point = context["logical_date"] or context["data_interval_start"]
+        start_date = run_point.in_timezone("UTC").start_of("day")
         end_date = start_date.add(days=1)
-        if interval_start != start_date:
+        if run_point != start_date:
             print(
-                f"Logical date {interval_start} is not a zulu midnight; "
+                f"Logical date {run_point} is not a zulu midnight; "
                 f"resolved to zulu date {start_date.date()}"
             )
         return _extract_raw_data_to_gcs(grain_id, start_date, end_date)
