@@ -1,5 +1,5 @@
 import re
-from datetime import timezone
+from datetime import timedelta, timezone
 
 from pendulum import datetime
 
@@ -210,6 +210,14 @@ with DAG(
     start_date=datetime(1996, 4, 1),
     schedule="@daily",
     catchup=False,
+    # Concurrent runs can double-insert the same merge key through BigQuery
+    # MERGE snapshot isolation, so only one run may be active at a time.
+    max_active_runs=1,
+    default_args={
+        "retries": 2,
+        "retry_delay": timedelta(minutes=1),
+        "retry_exponential_backoff": True,
+    },
 ) as dag:
     @task()
     def get_grain_ids() -> list[str]:
@@ -221,10 +229,11 @@ with DAG(
     @task()
     def extract_raw_data_to_gcs(grain_id: str):
         context = get_current_context()
-        logical_date = context["logical_date"]
-        start_date = logical_date.start_of("day")
-        end_date = start_date.add(days=1)
-        return _extract_raw_data_to_gcs(grain_id, start_date, end_date)
+        return _extract_raw_data_to_gcs(
+            grain_id,
+            context["data_interval_start"],
+            context["data_interval_end"],
+        )
 
     @task(task_id="raw_data_samples")
     def create_raw_data_samples(raw_location):
