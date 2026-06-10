@@ -260,6 +260,11 @@ with DAG(
         # Trigger logical dates must be given as utc midnights or the run
         # resolves to the prior zulu date.
         run_point = context["logical_date"] or context["data_interval_start"]
+        if run_point is None:
+            raise ValueError(
+                "Run provides neither a logical date nor a data interval "
+                "start to resolve the extraction date"
+            )
         start_date = run_point.in_timezone("UTC").start_of("day")
         end_date = start_date.add(days=1)
         if run_point != start_date:
