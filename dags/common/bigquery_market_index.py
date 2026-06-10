@@ -19,6 +19,7 @@ class BigQueryTransformConfig:
     region: str
     raw_gcs_uri: str
     raw_table_id: str = RAW_DATA_SAMPLES_TABLE
+    expected_raw_row_count: int | None = None
 
 
 QueryBuilder = Callable[[BigQueryTransformConfig], str]
@@ -59,6 +60,7 @@ def create_raw_data_samples_sql(config: BigQueryTransformConfig) -> str:
         dataset_id=config.dataset_id,
         raw_gcs_uri=config.raw_gcs_uri,
         raw_table_id=config.raw_table_id,
+        expected_row_count=config.expected_raw_row_count,
     )
 
 

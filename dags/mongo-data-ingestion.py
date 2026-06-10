@@ -148,6 +148,7 @@ def _bigquery_transform_config(config):
         region=_require_variable("bigquery_region", config["bigquery_region"]),
         raw_gcs_uri=_require_variable("raw_gcs_uri", config["raw_gcs_uri"]),
         raw_table_id=config.get("raw_table_id", RAW_DATA_SAMPLES_TABLE),
+        expected_raw_row_count=config.get("expected_raw_row_count"),
     )
 
 
@@ -187,6 +188,8 @@ def _run_bigquery_step(upstream_result, step_name, runner):
     # Scope the external table to the exact object this run uploaded so each
     # run only reprocesses its own interval; clearing a past run backfills it.
     config["raw_gcs_uri"] = f"gs://{raw_location['bucket']}/{raw_location['object']}"
+    if step_name == "raw_data_samples":
+        config["expected_raw_row_count"] = raw_location.get("document_count")
 
     transform_config = _bigquery_transform_config(config)
     client = _bigquery_client(config)

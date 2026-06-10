@@ -42,6 +42,25 @@ class BigQueryMarketIndexSqlTest(TestCase):
         self.assertIn("data JSON", sql)
         self.assertIn(f"uris = ['{RAW_GCS_URI}']", sql)
 
+    def test_raw_external_table_sql_appends_row_count_assertion(self):
+        sql = raw_data_samples_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            raw_gcs_uri=RAW_GCS_URI,
+            expected_row_count=3,
+        )
+
+        self.assertIn("CREATE OR REPLACE EXTERNAL TABLE", sql)
+        self.assertIn(") = 3 AS 'Raw external table row count must match", sql)
+
+        with self.assertRaises(ValueError):
+            raw_data_samples_sql(
+                project_id=PROJECT_ID,
+                dataset_id=DATASET_ID,
+                raw_gcs_uri=RAW_GCS_URI,
+                expected_row_count=-1,
+            )
+
     def test_sql_builders_accept_custom_raw_table_id(self):
         raw_table_id = "raw_data_samples_SX5E_Index"
         qualified = (

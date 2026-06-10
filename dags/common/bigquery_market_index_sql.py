@@ -73,6 +73,7 @@ def raw_data_samples_sql(
     dataset_id: str,
     raw_gcs_uri: str,
     raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
+    expected_row_count: int | None = None,
 ) -> str:
     tables = MarketIndexTables(
         project_id=project_id,
@@ -81,7 +82,7 @@ def raw_data_samples_sql(
     )
     raw_uri = _sql_string(raw_gcs_uri, "raw_gcs_uri")
 
-    return f"""-- Mongo exports use Extended JSON for ObjectId and Date fields. Keep those
+    sql = f"""-- Mongo exports use Extended JSON for ObjectId and Date fields. Keep those
 -- fields as JSON at the external-table boundary and normalize them downstream.
 CREATE OR REPLACE EXTERNAL TABLE {tables.raw_data_samples} (
   _id JSON,
@@ -99,6 +100,19 @@ OPTIONS (
   ignore_unknown_values = true,
   uris = [{raw_uri}]
 );"""
+
+    if expected_row_count is None:
+        return sql
+
+    if not isinstance(expected_row_count, int) or expected_row_count < 0:
+        raise ValueError("expected_row_count must be a non-negative integer")
+
+    return f"""{sql}
+
+ASSERT (
+  SELECT COUNT(*)
+  FROM {tables.raw_data_samples}
+) = {expected_row_count} AS 'Raw external table row count must match the extracted document count.';"""
 
 
 def dim_grains_merge_sql(
