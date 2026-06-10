@@ -26,7 +26,7 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         # The find criteria must include datasetId so the query stays on the
         # compound index over datasetId, grainId, and ts.
         self.assertIn('"datasetId": dataset_id,', dag_source)
-        self.assertIn("extract_raw_data_to_gcs.expand(target=grain_targets)", dag_source)
+        self.assertIn("ingest_grain.expand(target=grain_targets)", dag_source)
 
     def test_dag_serializes_runs_and_extracts_full_utc_day(self):
         dag_source = DAG_FILE.read_text()
@@ -43,6 +43,23 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertIn('in_timezone("UTC").start_of("day")', dag_source)
         self.assertIn("start_date.add(days=1)", dag_source)
         self.assertIn('start_date=datetime(1996, 4, 1, tz="UTC")', dag_source)
+
+    def test_extraction_skips_grain_with_no_samples_in_interval(self):
+        dag_source = DAG_FILE.read_text()
+
+        # A grain with no samples at the logical date must skip, not fail,
+        # so the per index transform and load tasks sit out the run while
+        # other grains proceed. The point probe for a wrong dataset id to
+        # grain id mapping must keep failing loudly.
+        self.assertIn("from airflow.sdk.exceptions import AirflowSkipException", dag_source)
+        self.assertIn("if not lines:", dag_source)
+        self.assertIn("raise AirflowSkipException(", dag_source)
+        self.assertIn("raise ValueError(", dag_source)
+        # Trigger rules only narrow a skipped upstream to the matching map
+        # index when both tasks share a mapped task group; without it one
+        # empty grain skips the transform and load tasks for every grain.
+        self.assertIn("@task_group()", dag_source)
+        self.assertIn("def ingest_grain(target: dict):", dag_source)
 
     def test_dag_scopes_raw_inputs_through_config_without_module_patch(self):
         dag_source = DAG_FILE.read_text()
@@ -75,11 +92,11 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertEqual(
             {
                 "get_grain_targets",
-                "extract_raw_data_to_gcs",
-                "raw_data_samples",
-                "dim_grains",
-                "dim_metrics",
-                "fact_values",
+                "ingest_grain.extract_raw_data_to_gcs",
+                "ingest_grain.raw_data_samples",
+                "ingest_grain.dim_grains",
+                "ingest_grain.dim_metrics",
+                "ingest_grain.fact_values",
             },
             task_ids,
         )

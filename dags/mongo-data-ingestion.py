@@ -4,9 +4,11 @@ from datetime import timedelta, timezone
 from pendulum import datetime
 
 # pyrefly: ignore [missing-import]
-from airflow.sdk import DAG, get_current_context, task
+from airflow.sdk import DAG, get_current_context, task, task_group
 # pyrefly: ignore [missing-import]
 from airflow.sdk import Variable
+# pyrefly: ignore [missing-import]
+from airflow.sdk.exceptions import AirflowSkipException
 # pyrefly: ignore [missing-import]
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 # pyrefly: ignore [missing-import]
@@ -101,7 +103,7 @@ def _extract_raw_data_to_gcs(target, data_interval_start, data_interval_end):
 
         # An indexed point probe separates a wrong dataset id to grain id
         # mapping, which must fail loudly, from a day with no data, which is
-        # a legitimate no-op.
+        # a legitimate skip.
         if collection.find_one(
             {"datasetId": dataset_id, "grainId": grain_id}, {"_id": 1}
         ) is None:
@@ -125,9 +127,18 @@ def _extract_raw_data_to_gcs(target, data_interval_start, data_interval_end):
 
     print(f"Extracted {len(lines)} raw documents from Mongo")
 
-    payload = "\n".join(lines)
-    if payload:
-        payload = f"{payload}\n"
+    # A grain with no samples in the interval is a legitimate quiet day.
+    # Trigger rules only resolve upstream skips per map index inside a
+    # common mapped task group, so this skip stays scoped to one grain only
+    # because the whole chain expands as one task group. Skipped runs leave
+    # any previously uploaded object for the interval in place.
+    if not lines:
+        raise AirflowSkipException(
+            f"No samples for grainId {grain_id} between "
+            f"{data_interval_start} and {data_interval_end}"
+        )
+
+    payload = "\n".join(lines) + "\n"
 
     gcs_hook = GCSHook(
         gcp_conn_id=config["gcp_conn_id"],
@@ -306,9 +317,17 @@ with DAG(
             run_merge_fact_values,
         )
 
+    # The per grain chain must expand as one mapped task group: trigger
+    # rules only narrow a skipped upstream to the matching map index when
+    # both tasks share a mapped task group, so without it one empty grain
+    # would skip the transform and load tasks for every grain.
+    @task_group()
+    def ingest_grain(target: dict):
+        raw_location = extract_raw_data_to_gcs(target)
+        raw_table = create_raw_data_samples(raw_location)
+        grains = merge_dim_grains(raw_table)
+        metrics = merge_dim_metrics(grains)
+        merge_fact_values(metrics)
+
     grain_targets = get_grain_targets()
-    raw_location = extract_raw_data_to_gcs.expand(target=grain_targets)
-    raw_table = create_raw_data_samples.expand(raw_location=raw_location)
-    grains = merge_dim_grains.expand(upstream_result=raw_table)
-    metrics = merge_dim_metrics.expand(upstream_result=grains)
-    merge_fact_values.expand(upstream_result=metrics)
+    ingest_grain.expand(target=grain_targets)
