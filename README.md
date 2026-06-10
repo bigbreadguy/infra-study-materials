@@ -69,7 +69,7 @@ Configure these Airflow Variables:
 - `mongo_conn_id`: Mongo Airflow Connection id. Required.
 - `mongo_database_name`: Mongo database name. Required.
 - `mongo_collection_name`: Mongo collection name. Required.
-- `mongo_grain_id`: Mongo `grainId` to extract. Required.
+- `mongo_grain_targets`: JSON array of grain targets to extract. Required.
 - `gcp_conn_id`: Google Cloud Airflow Connection id. Required.
 - `gcs_bucket_name`: raw GCS bucket. Required.
 - `gcs_raw_prefix`: raw object prefix, for example `bloomberg/raw`. Required.
@@ -81,6 +81,32 @@ Configure these Airflow Variables:
 - `bigquery_region`: BigQuery job location. Required.
 - `bigquery_impersonation_chain`: service account to impersonate for BigQuery
   transform-load jobs. Required.
+
+`mongo_grain_targets` holds one object per grain with `dataset_id` (the Mongo
+`datasetId` ObjectId as a twenty four character lowercase hex string),
+`grain_id` (the Mongo `grainId` string), `description` (operator
+documentation), and an optional `enabled` boolean that defaults to true:
+
+```json
+[
+  {
+    "dataset_id": "64a1f0c2e4b0a1b2c3d4e5f6",
+    "grain_id": "SX5E_Index",
+    "description": "euro stoxx 50 index daily ohlcv",
+    "enabled": true
+  }
+]
+```
+
+The DAG validates the variable at the start of every run and fails fast on
+malformed entries. Extraction filters on `datasetId`, `grainId`, and `ts`
+together so the find stays on the collection's compound index over those
+fields instead of scanning the collection; an indexed point probe also fails
+the task loudly when a `dataset_id` does not pair with its `grain_id`, which
+distinguishes a mistyped mapping from a day with no data. Manage the variable
+as config-as-code: keep the canonical JSON in an ignored local file and load
+it with `airflow variables set mongo_grain_targets "$(cat <file>)"` so
+changes are reviewed and reversible instead of hand-edited in the UI.
 
 The raw object path is deterministic:
 

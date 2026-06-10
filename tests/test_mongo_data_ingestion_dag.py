@@ -17,6 +17,17 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertNotIn('Variable.get("raw_gcs_uri"', dag_source)
         self.assertIn("BigQueryHook", dag_source)
 
+    def test_extraction_targets_grains_through_structured_variable(self):
+        dag_source = DAG_FILE.read_text()
+
+        self.assertNotIn("mongo_grain_id", dag_source)
+        self.assertIn("GRAIN_TARGETS_VARIABLE", dag_source)
+        self.assertIn("parse_grain_targets(raw)", dag_source)
+        # The find criteria must include datasetId so the query stays on the
+        # compound index over datasetId, grainId, and ts.
+        self.assertIn('"datasetId": dataset_id,', dag_source)
+        self.assertIn("extract_raw_data_to_gcs.expand(target=grain_targets)", dag_source)
+
     def test_dag_serializes_runs_and_extracts_full_utc_day(self):
         dag_source = DAG_FILE.read_text()
 
@@ -63,7 +74,7 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertEqual(dag.dag_id, "mongo-data-ingestion")
         self.assertEqual(
             {
-                "get_grain_ids",
+                "get_grain_targets",
                 "extract_raw_data_to_gcs",
                 "raw_data_samples",
                 "dim_grains",

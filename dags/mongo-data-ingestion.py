@@ -14,7 +14,7 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 # pyrefly: ignore [missing-import]
 from airflow.providers.mongo.hooks.mongo import MongoHook
 # pyrefly: ignore [missing-import]
-from bson import json_util
+from bson import ObjectId, json_util
 
 from common.bigquery_market_index import (
     BigQueryTransformConfig,
@@ -25,6 +25,7 @@ from common.bigquery_market_index import (
 )
 from common.bigquery_market_index_sql import RAW_DATA_SAMPLES_TABLE
 from common.gcs_object import upload_replacing_object
+from common.grain_targets import GRAIN_TARGETS_VARIABLE, parse_grain_targets
 
 
 def _require_variable(name, value):
@@ -53,7 +54,6 @@ def _load_ingestion_config():
         "mongo_conn_id": _required_airflow_variable("mongo_conn_id"),
         "mongo_database_name": _required_airflow_variable("mongo_database_name"),
         "mongo_collection_name": _required_airflow_variable("mongo_collection_name"),
-        "mongo_grain_id": _required_airflow_variable("mongo_grain_id"),
         "gcp_conn_id": _required_airflow_variable("gcp_conn_id"),
         "gcs_bucket_name": gcs_bucket_name,
         "gcs_raw_prefix": gcs_raw_prefix,
@@ -83,7 +83,9 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
     return "/".join(part for part in path_parts if part)
 
 
-def _extract_raw_data_to_gcs(grain_id, data_interval_start, data_interval_end):
+def _extract_raw_data_to_gcs(target, data_interval_start, data_interval_end):
+    grain_id = target["grain_id"]
+    dataset_id = ObjectId(target["dataset_id"])
     config = _load_ingestion_config()
     bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
     object_name = _build_gcs_object_name(
@@ -93,11 +95,26 @@ def _extract_raw_data_to_gcs(grain_id, data_interval_start, data_interval_end):
     lines = []
 
     with MongoHook(mongo_conn_id=config["mongo_conn_id"]) as hook:
-        # Fetch documents by grainId, ts
         collection = hook.get_conn().get_database(
             config["mongo_database_name"]
         ).get_collection(config["mongo_collection_name"])
+
+        # An indexed point probe separates a wrong dataset id to grain id
+        # mapping, which must fail loudly, from a day with no data, which is
+        # a legitimate no-op.
+        if collection.find_one(
+            {"datasetId": dataset_id, "grainId": grain_id}, {"_id": 1}
+        ) is None:
+            raise ValueError(
+                f"No documents match datasetId {target['dataset_id']} with "
+                f"grainId {grain_id}; check the "
+                f"{GRAIN_TARGETS_VARIABLE} variable"
+            )
+
+        # Lead with datasetId so the find stays on the compound index over
+        # datasetId, grainId, and ts.
         for doc in collection.find({
+            "datasetId": dataset_id,
             "grainId": grain_id,
             "ts": {
                 "$gte": data_interval_start,
@@ -225,14 +242,16 @@ with DAG(
     },
 ) as dag:
     @task()
-    def get_grain_ids() -> list[str]:
-        grain_ids_str = Variable.get("mongo_grain_id", default="")
-        if not grain_ids_str:
-            raise ValueError("Airflow Variable 'mongo_grain_id' must be set")
-        return [g.strip() for g in grain_ids_str.split(",") if g.strip()]
+    def get_grain_targets() -> list[dict]:
+        raw = Variable.get(GRAIN_TARGETS_VARIABLE, default="")
+        if not raw:
+            raise ValueError(
+                f"Airflow Variable '{GRAIN_TARGETS_VARIABLE}' must be set"
+            )
+        return parse_grain_targets(raw)
 
     @task()
-    def extract_raw_data_to_gcs(grain_id: str):
+    def extract_raw_data_to_gcs(target: dict):
         context = get_current_context()
         # Stick to the date only: resolve the run to its zulu calendar date
         # and extract that full utc day. The logical date is authoritative
@@ -248,7 +267,7 @@ with DAG(
                 f"Logical date {run_point} is not a zulu midnight; "
                 f"resolved to zulu date {start_date.date()}"
             )
-        return _extract_raw_data_to_gcs(grain_id, start_date, end_date)
+        return _extract_raw_data_to_gcs(target, start_date, end_date)
 
     @task(task_id="raw_data_samples")
     def create_raw_data_samples(raw_location):
@@ -282,8 +301,8 @@ with DAG(
             run_merge_fact_values,
         )
 
-    grain_ids = get_grain_ids()
-    raw_location = extract_raw_data_to_gcs.expand(grain_id=grain_ids)
+    grain_targets = get_grain_targets()
+    raw_location = extract_raw_data_to_gcs.expand(target=grain_targets)
     raw_table = create_raw_data_samples.expand(raw_location=raw_location)
     grains = merge_dim_grains.expand(upstream_result=raw_table)
     metrics = merge_dim_metrics.expand(upstream_result=grains)
