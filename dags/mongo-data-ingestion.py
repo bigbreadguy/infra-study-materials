@@ -177,8 +177,8 @@ def _run_bigquery_step(upstream_result, step_name, runner):
     config = _load_ingestion_config()
 
     if grain_id:
-        # Override the external table name globally for this task invocation to prevent parallel conflicts
         normalized_grain_id = re.sub(r"[^a-zA-Z0-9]", "_", grain_id)
+        # pyrefly: ignore [bad-assignment]
         bq_sql.RAW_DATA_SAMPLES_TABLE = f"raw_data_samples_{normalized_grain_id}"
 
         # Override raw_gcs_uri to point only to this grain's subfolder
