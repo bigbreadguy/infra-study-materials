@@ -102,13 +102,51 @@ class BigQueryMarketIndexSqlTest(TestCase):
             dataset_id=DATASET_ID,
         )
 
-        self.assertIn("ON target.id = source.id", grain_sql)
+        # A dataset holds several grains, so grain identity is the dataset
+        # id and grain name pair; keying dim_grains on the dataset id alone
+        # made sibling grains fight over one row.
+        self.assertIn(
+            "ON target.id = source.id\n  AND target.name = source.name",
+            grain_sql,
+        )
+        self.assertIn("GROUP BY id, name", grain_sql)
         self.assertIn("_FILE_NAME AS source_file_name", grain_sql)
         self.assertIn("ON target.grain_id = source.grain_id", metric_sql)
         self.assertIn("AND target.name = source.name", metric_sql)
+        self.assertIn(
+            "ON grain.id = raw.grain_id\n      AND grain.name = raw.grain_name",
+            metric_sql,
+        )
         self.assertIn("VALUES (GENERATE_UUID(), source.grain_id", metric_sql)
         self.assertIn("'OpenInterest' AS metric_suffix", metric_sql)
         self.assertIn("'Value' AS metric_suffix", metric_sql)
+
+    def test_dimension_merge_sql_asserts_key_uniqueness_after_merge(self):
+        grain_sql = dim_grains_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+        metric_sql = dim_metrics_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+
+        # Key duplication must fail loudly at the dim merge that caused it,
+        # not three tasks later when the fact merge fans out its source.
+        self.assertIn(
+            "'dim_grains must keep one row per dataset id and grain name pair.'",
+            grain_sql,
+        )
+        self.assertIn(
+            "'dim_metrics must keep one row per grain id and metric name pair.'",
+            metric_sql,
+        )
+        for sql in (grain_sql, metric_sql):
+            self.assertLess(
+                sql.index("MERGE `"),
+                sql.index("ASSERT ("),
+                "the uniqueness assert must run after the merge",
+            )
 
     def test_fact_sql_includes_assertion_dates_and_partition_filter(self):
         sql = fact_values_merge_sql(
@@ -137,6 +175,15 @@ class BigQueryMarketIndexSqlTest(TestCase):
         )
         self.assertIn("VALUES (\n    GENERATE_UUID()", sql)
         self.assertIn("metric_value", sql)
+        # Both dim_grains joins must carry the grain name; joining on the
+        # shared dataset id alone fans one candidate into multiple source
+        # rows and breaks MERGE.
+        self.assertEqual(
+            sql.count(
+                "ON grain.id = fact.grain_id\n    AND grain.name = fact.grain_name"
+            ),
+            2,
+        )
 
     def test_fact_sql_deduplicates_source_and_target_rows(self):
         sql = fact_values_merge_sql(

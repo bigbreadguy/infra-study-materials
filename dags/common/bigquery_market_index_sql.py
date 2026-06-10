@@ -139,21 +139,34 @@ USING (
   )
   SELECT
     id,
-    ARRAY_AGG(name IGNORE NULLS ORDER BY source_file_name DESC LIMIT 1)[OFFSET(0)] AS name,
+    name,
     NULLIF(ARRAY_AGG(COALESCE(description, '') ORDER BY source_file_name DESC LIMIT 1)[OFFSET(0)], '') AS description
   FROM normalized
   WHERE id IS NOT NULL
     AND name IS NOT NULL
-  GROUP BY id
+  GROUP BY id, name
 ) AS source
+-- A dataset holds several grains, so grain identity is the dataset id and
+-- grain name pair; keying on the dataset id alone made sibling grains fight
+-- over one row.
 ON target.id = source.id
+  AND target.name = source.name
 WHEN MATCHED THEN
   UPDATE SET
-    name = source.name,
     description = source.description
 WHEN NOT MATCHED THEN
   INSERT (id, name, description)
-  VALUES (source.id, source.name, source.description);"""
+  VALUES (source.id, source.name, source.description);
+
+ASSERT (
+  SELECT COUNT(*)
+  FROM (
+    SELECT id, name
+    FROM {tables.dim_grains}
+    GROUP BY id, name
+    HAVING COUNT(*) > 1
+  )
+) = 0 AS 'dim_grains must keep one row per dataset id and grain name pair.';"""
 
 
 def dim_metrics_merge_sql(
@@ -189,6 +202,7 @@ USING (
     FROM raw_samples AS raw
     JOIN {tables.dim_grains} AS grain
       ON grain.id = raw.grain_id
+      AND grain.name = raw.grain_name
     CROSS JOIN UNNEST([
       STRUCT(
         'Open' AS metric_suffix,
@@ -252,7 +266,17 @@ WHEN MATCHED THEN
     description = source.description
 WHEN NOT MATCHED THEN
   INSERT (id, grain_id, name, description)
-  VALUES (GENERATE_UUID(), source.grain_id, source.name, source.description);"""
+  VALUES (GENERATE_UUID(), source.grain_id, source.name, source.description);
+
+ASSERT (
+  SELECT COUNT(*)
+  FROM (
+    SELECT grain_id, name
+    FROM {tables.dim_metrics}
+    GROUP BY grain_id, name
+    HAVING COUNT(*) > 1
+  )
+) = 0 AS 'dim_metrics must keep one row per grain id and metric name pair.';"""
 
 
 def fact_values_merge_sql(
@@ -383,6 +407,7 @@ ASSERT (
   FROM fact_candidates AS fact
   LEFT JOIN {tables.dim_grains} AS grain
     ON grain.id = fact.grain_id
+    AND grain.name = fact.grain_name
   LEFT JOIN {tables.dim_metrics} AS metric
     ON metric.grain_id = fact.grain_id
     AND metric.name = fact.metric_name
@@ -421,8 +446,12 @@ USING (
     fact.metric_value,
     fact.updated_at
   FROM fact_candidates AS fact
+  -- Both dim joins must carry the grain name: a dataset holds several
+  -- grains, so joining on the dataset id alone fans one candidate into
+  -- multiple source rows and breaks MERGE.
   JOIN {tables.dim_grains} AS grain
     ON grain.id = fact.grain_id
+    AND grain.name = fact.grain_name
   JOIN {tables.dim_metrics} AS metric
     ON metric.grain_id = fact.grain_id
     AND metric.name = fact.metric_name
