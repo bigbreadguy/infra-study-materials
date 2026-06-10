@@ -85,7 +85,12 @@ Configure these Airflow Variables:
 `mongo_grain_targets` holds one object per grain with `dataset_id` (the Mongo
 `datasetId` ObjectId as a twenty four character lowercase hex string),
 `grain_id` (the Mongo `grainId` string), `description` (operator
-documentation), and an optional `enabled` boolean that defaults to true:
+documentation that also lands in `dim_grains.description`; quotes and
+backslashes are rejected because the value is embedded as a SQL literal),
+and an optional `enabled` boolean that defaults to true. Several grains may
+share one `dataset_id`: `dim_grains` keys rows by the dataset id and grain
+name pair, and the dimension merges assert key uniqueness so an identity
+regression fails at the merge that caused it:
 
 ```json
 [
@@ -103,7 +108,9 @@ malformed entries. Extraction filters on `datasetId`, `grainId`, and `ts`
 together so the find stays on the collection's compound index over those
 fields instead of scanning the collection; an indexed point probe also fails
 the task loudly when a `dataset_id` does not pair with its `grain_id`, which
-distinguishes a mistyped mapping from a day with no data. Manage the variable
+distinguishes a mistyped mapping from a day with no data. A grain with no
+samples on the date skips its own transform-load tasks for that run while
+the other grains keep processing. Manage the variable
 as config-as-code: keep the canonical JSON in an ignored local file and load
 it with `airflow variables set mongo_grain_targets "$(cat <file>)"` so
 changes are reviewed and reversible instead of hand-edited in the UI.
@@ -127,7 +134,12 @@ replacement permission on the raw bucket. If an upload fails with a missing
 staged IAM apply that restores that permission.
 
 The current DAG runs the BigQuery transform-load steps in parallel per grain
-id and recreates one raw external table per grain after each raw upload. Each
+id and recreates one raw external table per grain after each raw upload. The
+per grain chain expands as one mapped task group (`ingest_grain`), which is
+load-bearing: Airflow trigger rules only narrow a skipped upstream to the
+matching map index when both tasks share a mapped task group, so without the
+group one empty grain would skip the transform-load tasks for every grain.
+Each
 external table points at the exact object the run uploaded, so a run only
 reprocesses its own data interval; clearing a past run in Airflow backfills
 that interval. Logical dates are managed in Zulu time because the source
