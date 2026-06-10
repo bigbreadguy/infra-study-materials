@@ -170,7 +170,7 @@ def _raw_location_from_upstream(upstream_result):
 
 def _run_bigquery_step(upstream_result, step_name, runner):
     import re
-    import dags.common.bigquery_market_index_sql as bq_sql
+    import common.bigquery_market_index_sql as bq_sql
 
     raw_location = _raw_location_from_upstream(upstream_result)
     grain_id = raw_location.get("grain_id")
