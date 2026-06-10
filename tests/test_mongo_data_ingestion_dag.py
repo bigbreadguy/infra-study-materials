@@ -17,14 +17,19 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertNotIn('Variable.get("raw_gcs_uri"', dag_source)
         self.assertIn("BigQueryHook", dag_source)
 
-    def test_dag_serializes_runs_and_uses_data_interval(self):
+    def test_dag_serializes_runs_and_extracts_full_utc_day(self):
         dag_source = DAG_FILE.read_text()
 
         self.assertIn("max_active_runs=1", dag_source)
         self.assertIn('"retries": 2', dag_source)
-        self.assertIn('context["data_interval_start"]', dag_source)
-        self.assertIn('context["data_interval_end"]', dag_source)
-        self.assertNotIn('start_of("day")', dag_source)
+        # Manual runs under cron trigger timetables carry zero width data
+        # intervals, so the extraction window must expand to the full utc day.
+        self.assertIn(
+            'context["data_interval_start"] or context["logical_date"]',
+            dag_source,
+        )
+        self.assertIn('in_timezone("UTC").start_of("day")', dag_source)
+        self.assertIn("start_date.add(days=1)", dag_source)
 
     def test_dag_scopes_raw_inputs_through_config_without_module_patch(self):
         dag_source = DAG_FILE.read_text()

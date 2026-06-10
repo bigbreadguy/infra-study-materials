@@ -232,11 +232,13 @@ with DAG(
     @task()
     def extract_raw_data_to_gcs(grain_id: str):
         context = get_current_context()
-        return _extract_raw_data_to_gcs(
-            grain_id,
-            context["data_interval_start"],
-            context["data_interval_end"],
-        )
+        # Source data is day grained, and cron trigger timetables hand manual
+        # runs a zero width data interval, so always extract the full utc day
+        # containing the interval start.
+        interval_start = context["data_interval_start"] or context["logical_date"]
+        start_date = interval_start.in_timezone("UTC").start_of("day")
+        end_date = start_date.add(days=1)
+        return _extract_raw_data_to_gcs(grain_id, start_date, end_date)
 
     @task(task_id="raw_data_samples")
     def create_raw_data_samples(raw_location):
