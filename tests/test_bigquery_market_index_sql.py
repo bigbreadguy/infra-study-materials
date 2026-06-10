@@ -121,6 +121,33 @@ class BigQueryMarketIndexSqlTest(TestCase):
         self.assertIn("'OpenInterest' AS metric_suffix", metric_sql)
         self.assertIn("'Value' AS metric_suffix", metric_sql)
 
+    def test_dim_grains_merge_sql_prefers_target_variable_description(self):
+        sql = dim_grains_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            grain_description="euro stoxx 50 index daily ohlcv",
+        )
+
+        # The curated description from the grain targets variable wins over
+        # whatever the raw Mongo documents carry, which is usually nothing.
+        self.assertIn(
+            "COALESCE('euro stoxx 50 index daily ohlcv', NULLIF(ARRAY_AGG(",
+            sql,
+        )
+
+        default_sql = dim_grains_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+        self.assertNotIn("COALESCE('", default_sql)
+
+        with self.assertRaises(ValueError):
+            dim_grains_merge_sql(
+                project_id=PROJECT_ID,
+                dataset_id=DATASET_ID,
+                grain_description="bad 'quoted' description",
+            )
+
     def test_dimension_merge_sql_asserts_key_uniqueness_after_merge(self):
         grain_sql = dim_grains_merge_sql(
             project_id=PROJECT_ID,

@@ -66,6 +66,14 @@ def parse_grain_targets(raw: str | list) -> list[dict]:
                 f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} must set "
                 "description to a non-empty string"
             )
+        # The description is embedded as a SQL string literal in the
+        # dim grains merge; reject the characters the literal builder
+        # refuses so a bad variable edit fails here, not mid pipeline.
+        if "'" in description or "\\" in description:
+            raise ValueError(
+                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} description "
+                "must not contain quotes or backslashes"
+            )
 
         enabled = entry.get("enabled", True)
         if not isinstance(enabled, bool):

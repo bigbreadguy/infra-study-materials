@@ -20,6 +20,7 @@ class BigQueryTransformConfig:
     raw_gcs_uri: str
     raw_table_id: str = RAW_DATA_SAMPLES_TABLE
     expected_raw_row_count: int | None = None
+    grain_description: str | None = None
 
 
 QueryBuilder = Callable[[BigQueryTransformConfig], str]
@@ -70,6 +71,7 @@ def merge_dim_grains_sql(config: BigQueryTransformConfig) -> str:
         project_id=config.project_id,
         dataset_id=config.dataset_id,
         raw_table_id=config.raw_table_id,
+        grain_description=config.grain_description,
     )
 
 

@@ -27,6 +27,13 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         # compound index over datasetId, grainId, and ts.
         self.assertIn('"datasetId": dataset_id,', dag_source)
         self.assertIn("ingest_grain.expand(target=grain_targets)", dag_source)
+        # The curated description rides the extract result so the dim
+        # grains merge can prefer it over the raw document description.
+        self.assertIn('"grain_description": target["description"],', dag_source)
+        self.assertIn(
+            'config["grain_description"] = raw_location.get("grain_description")',
+            dag_source,
+        )
 
     def test_dag_serializes_runs_and_extracts_full_utc_day(self):
         dag_source = DAG_FILE.read_text()

@@ -74,6 +74,15 @@ class GrainTargetsTest(TestCase):
         with self.assertRaisesRegex(ValueError, "description"):
             parse_grain_targets([entry])
 
+    def test_rejects_description_with_sql_literal_breakers(self):
+        # The description is embedded as a SQL string literal in the dim
+        # grains merge, so the characters the literal builder refuses must
+        # fail at parse time, not mid pipeline.
+        for bad in ("euro stoxx 50 'index'", "euro stoxx 50 \\ index"):
+            entry = dict(VALID_TARGET, description=bad)
+            with self.assertRaisesRegex(ValueError, "quotes or backslashes"):
+                parse_grain_targets([entry])
+
     def test_rejects_non_boolean_enabled(self):
         entry = dict(VALID_TARGET, enabled="yes")
         with self.assertRaisesRegex(ValueError, "enabled"):

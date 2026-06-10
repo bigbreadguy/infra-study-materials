@@ -120,12 +120,27 @@ def dim_grains_merge_sql(
     project_id: str,
     dataset_id: str,
     raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
+    grain_description: str | None = None,
 ) -> str:
     tables = MarketIndexTables(
         project_id=project_id,
         dataset_id=dataset_id,
         raw_table_id=raw_table_id,
     )
+
+    # The curated description from the grain targets variable wins over
+    # whatever the raw Mongo documents carry, which is usually nothing.
+    raw_description_expr = (
+        "NULLIF(ARRAY_AGG(COALESCE(description, '') "
+        "ORDER BY source_file_name DESC LIMIT 1)[OFFSET(0)], '')"
+    )
+    if grain_description is None:
+        description_expr = raw_description_expr
+    else:
+        description_expr = (
+            f"COALESCE({_sql_string(grain_description, 'grain_description')}, "
+            f"{raw_description_expr})"
+        )
 
     return f"""MERGE {tables.dim_grains} AS target
 USING (
@@ -140,7 +155,7 @@ USING (
   SELECT
     id,
     name,
-    NULLIF(ARRAY_AGG(COALESCE(description, '') ORDER BY source_file_name DESC LIMIT 1)[OFFSET(0)], '') AS description
+    {description_expr} AS description
   FROM normalized
   WHERE id IS NOT NULL
     AND name IS NOT NULL
