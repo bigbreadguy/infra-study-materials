@@ -17,6 +17,16 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertNotIn('Variable.get("raw_gcs_uri"', dag_source)
         self.assertIn("BigQueryHook", dag_source)
 
+    def test_dag_scopes_raw_inputs_through_config_without_module_patch(self):
+        dag_source = DAG_FILE.read_text()
+
+        self.assertNotIn("bq_sql.RAW_DATA_SAMPLES_TABLE", dag_source)
+        self.assertIn('config["raw_table_id"] = _grain_raw_table_id(grain_id)', dag_source)
+        self.assertIn(
+            "gs://{raw_location['bucket']}/{raw_location['object']}",
+            dag_source,
+        )
+
     def test_dag_imports_with_expected_tasks_when_airflow_is_available(self):
         try:
             import airflow  # noqa: F401

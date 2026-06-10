@@ -42,6 +42,37 @@ class BigQueryMarketIndexSqlTest(TestCase):
         self.assertIn("data JSON", sql)
         self.assertIn(f"uris = ['{RAW_GCS_URI}']", sql)
 
+    def test_sql_builders_accept_custom_raw_table_id(self):
+        raw_table_id = "raw_data_samples_SX5E_Index"
+        qualified = (
+            "`example-study-proj.dl_bloomberg_data.raw_data_samples_SX5E_Index`"
+        )
+
+        raw_sql = raw_data_samples_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            raw_gcs_uri=RAW_GCS_URI,
+            raw_table_id=raw_table_id,
+        )
+        grain_sql = dim_grains_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            raw_table_id=raw_table_id,
+        )
+        metric_sql = dim_metrics_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            raw_table_id=raw_table_id,
+        )
+        fact_sql = fact_values_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            raw_table_id=raw_table_id,
+        )
+
+        for sql in (raw_sql, grain_sql, metric_sql, fact_sql):
+            self.assertIn(qualified, sql)
+
     def test_dimension_merge_sql_preserves_merge_keys(self):
         grain_sql = dim_grains_merge_sql(
             project_id=PROJECT_ID,

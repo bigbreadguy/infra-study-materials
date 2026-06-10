@@ -1,3 +1,4 @@
+import re
 from datetime import timezone
 
 from pendulum import datetime
@@ -22,6 +23,7 @@ from common.bigquery_market_index import (
     run_merge_dim_metrics,
     run_merge_fact_values,
 )
+from common.bigquery_market_index_sql import RAW_DATA_SAMPLES_TABLE
 from common.gcs_object import upload_replacing_object
 
 
@@ -145,6 +147,7 @@ def _bigquery_transform_config(config):
         ),
         region=_require_variable("bigquery_region", config["bigquery_region"]),
         raw_gcs_uri=_require_variable("raw_gcs_uri", config["raw_gcs_uri"]),
+        raw_table_id=config.get("raw_table_id", RAW_DATA_SAMPLES_TABLE),
     )
 
 
@@ -168,23 +171,22 @@ def _raw_location_from_upstream(upstream_result):
     return upstream_result
 
 
-def _run_bigquery_step(upstream_result, step_name, runner):
-    import re
-    import common.bigquery_market_index_sql as bq_sql
+def _grain_raw_table_id(grain_id):
+    normalized_grain_id = re.sub(r"[^a-zA-Z0-9]", "_", grain_id)
+    return f"{RAW_DATA_SAMPLES_TABLE}_{normalized_grain_id}"
 
+
+def _run_bigquery_step(upstream_result, step_name, runner):
     raw_location = _raw_location_from_upstream(upstream_result)
     grain_id = raw_location.get("grain_id")
     config = _load_ingestion_config()
 
     if grain_id:
-        normalized_grain_id = re.sub(r"[^a-zA-Z0-9]", "_", grain_id)
-        # pyrefly: ignore [bad-assignment]
-        bq_sql.RAW_DATA_SAMPLES_TABLE = f"raw_data_samples_{normalized_grain_id}"
+        config["raw_table_id"] = _grain_raw_table_id(grain_id)
 
-        # Override raw_gcs_uri to point only to this grain's subfolder
-        gcs_bucket_name = config["gcs_bucket_name"]
-        gcs_raw_prefix = config["gcs_raw_prefix"].strip("/")
-        config["raw_gcs_uri"] = f"gs://{gcs_bucket_name}/{gcs_raw_prefix}/grain_id={grain_id}/*"
+    # Scope the external table to the exact object this run uploaded so each
+    # run only reprocesses its own interval; clearing a past run backfills it.
+    config["raw_gcs_uri"] = f"gs://{raw_location['bucket']}/{raw_location['object']}"
 
     transform_config = _bigquery_transform_config(config)
     client = _bigquery_client(config)

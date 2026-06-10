@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from common.bigquery_market_index_sql import (
+    RAW_DATA_SAMPLES_TABLE,
     dim_grains_merge_sql,
     dim_metrics_merge_sql,
     fact_values_merge_sql,
@@ -17,6 +18,7 @@ class BigQueryTransformConfig:
     dataset_id: str
     region: str
     raw_gcs_uri: str
+    raw_table_id: str = RAW_DATA_SAMPLES_TABLE
 
 
 QueryBuilder = Callable[[BigQueryTransformConfig], str]
@@ -28,6 +30,7 @@ def _validate_config(config: BigQueryTransformConfig) -> None:
         "dataset_id": config.dataset_id,
         "region": config.region,
         "raw_gcs_uri": config.raw_gcs_uri,
+        "raw_table_id": config.raw_table_id,
     }
     for name, value in required_values.items():
         if not value:
@@ -55,6 +58,7 @@ def create_raw_data_samples_sql(config: BigQueryTransformConfig) -> str:
         project_id=config.project_id,
         dataset_id=config.dataset_id,
         raw_gcs_uri=config.raw_gcs_uri,
+        raw_table_id=config.raw_table_id,
     )
 
 
@@ -63,6 +67,7 @@ def merge_dim_grains_sql(config: BigQueryTransformConfig) -> str:
     return dim_grains_merge_sql(
         project_id=config.project_id,
         dataset_id=config.dataset_id,
+        raw_table_id=config.raw_table_id,
     )
 
 
@@ -71,6 +76,7 @@ def merge_dim_metrics_sql(config: BigQueryTransformConfig) -> str:
     return dim_metrics_merge_sql(
         project_id=config.project_id,
         dataset_id=config.dataset_id,
+        raw_table_id=config.raw_table_id,
     )
 
 
@@ -79,6 +85,7 @@ def merge_fact_values_sql(config: BigQueryTransformConfig) -> str:
     return fact_values_merge_sql(
         project_id=config.project_id,
         dataset_id=config.dataset_id,
+        raw_table_id=config.raw_table_id,
     )
 
 

@@ -13,13 +13,14 @@ FACT_VALUES_TABLE = "fact_values"
 class MarketIndexTables:
     project_id: str
     dataset_id: str
+    raw_table_id: str = RAW_DATA_SAMPLES_TABLE
 
     @property
     def raw_data_samples(self) -> str:
         return qualified_table(
             self.project_id,
             self.dataset_id,
-            RAW_DATA_SAMPLES_TABLE,
+            self.raw_table_id,
         )
 
     @property
@@ -71,8 +72,13 @@ def raw_data_samples_sql(
     project_id: str,
     dataset_id: str,
     raw_gcs_uri: str,
+    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
 ) -> str:
-    tables = MarketIndexTables(project_id=project_id, dataset_id=dataset_id)
+    tables = MarketIndexTables(
+        project_id=project_id,
+        dataset_id=dataset_id,
+        raw_table_id=raw_table_id,
+    )
     raw_uri = _sql_string(raw_gcs_uri, "raw_gcs_uri")
 
     return f"""-- Mongo exports use Extended JSON for ObjectId and Date fields. Keep those
@@ -95,8 +101,17 @@ OPTIONS (
 );"""
 
 
-def dim_grains_merge_sql(*, project_id: str, dataset_id: str) -> str:
-    tables = MarketIndexTables(project_id=project_id, dataset_id=dataset_id)
+def dim_grains_merge_sql(
+    *,
+    project_id: str,
+    dataset_id: str,
+    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
+) -> str:
+    tables = MarketIndexTables(
+        project_id=project_id,
+        dataset_id=dataset_id,
+        raw_table_id=raw_table_id,
+    )
 
     return f"""MERGE {tables.dim_grains} AS target
 USING (
@@ -127,8 +142,17 @@ WHEN NOT MATCHED THEN
   VALUES (source.id, source.name, source.description);"""
 
 
-def dim_metrics_merge_sql(*, project_id: str, dataset_id: str) -> str:
-    tables = MarketIndexTables(project_id=project_id, dataset_id=dataset_id)
+def dim_metrics_merge_sql(
+    *,
+    project_id: str,
+    dataset_id: str,
+    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
+) -> str:
+    tables = MarketIndexTables(
+        project_id=project_id,
+        dataset_id=dataset_id,
+        raw_table_id=raw_table_id,
+    )
 
     return f"""MERGE {tables.dim_metrics} AS target
 USING (
@@ -217,8 +241,17 @@ WHEN NOT MATCHED THEN
   VALUES (GENERATE_UUID(), source.grain_id, source.name, source.description);"""
 
 
-def fact_values_merge_sql(*, project_id: str, dataset_id: str) -> str:
-    tables = MarketIndexTables(project_id=project_id, dataset_id=dataset_id)
+def fact_values_merge_sql(
+    *,
+    project_id: str,
+    dataset_id: str,
+    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
+) -> str:
+    tables = MarketIndexTables(
+        project_id=project_id,
+        dataset_id=dataset_id,
+        raw_table_id=raw_table_id,
+    )
 
     return f"""DECLARE min_candidate_logical_date DATE DEFAULT NULL;
 DECLARE max_candidate_logical_date DATE DEFAULT NULL;
