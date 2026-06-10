@@ -100,10 +100,19 @@ replacement permission on the raw bucket. If an upload fails with a missing
 `storage.objects.delete` permission, check that Terraform has completed the
 staged IAM apply that restores that permission.
 
-The current DAG recreates the raw external table from
-`gs://<gcs_bucket_name>/<gcs_raw_prefix>/*` after each raw upload. It does not
-restrict downstream MERGE statements to only the uploaded object path;
-idempotent merge keys keep reruns stable across the configured raw prefix.
+The current DAG runs the BigQuery transform-load steps in parallel per grain
+id and recreates one raw external table per grain after each raw upload.
+
+The `fact_values` script manages duplicate-row conflicts on its own:
+
+- The merge source keeps only the freshest row per merge key, so the same
+  Mongo document appearing in multiple raw objects (for example stale
+  `raw-...-001.ndjson` files left behind by an earlier unique-name upload
+  scheme) can no longer fail the MERGE with
+  `UPDATE/MERGE must match at most one source row for each target row`.
+- Before merging, the script deletes previously duplicated `fact_values` rows
+  inside the candidate date window, keeping the latest ingested row, so the
+  warehouse self-heals from duplicates inserted by earlier runs.
 
 If impersonation fails with `iam.serviceAccounts.getAccessToken`, the Airflow
 runtime ADC principal cannot impersonate the configured service account. Grant

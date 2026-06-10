@@ -302,6 +302,7 @@ typed_rows AS (
     'D' AS time_grain,
     CONCAT(grain_name, '_', metric_suffix) AS metric_name,
     metric_value,
+    source_file_name,
     COALESCE(
       SAFE_CAST(source_updated_at AS TIMESTAMP),
       SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%E*S%Ez', source_updated_at),
@@ -313,7 +314,13 @@ typed_rows AS (
 )
 SELECT *
 FROM typed_rows
-WHERE logical_date IS NOT NULL;
+WHERE logical_date IS NOT NULL
+-- Stale raw exports can carry the same Mongo document in multiple files;
+-- keep only the freshest row per merge key so MERGE never sees duplicates.
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY sample_id, grain_id, metric_name, logical_date, time_grain
+  ORDER BY updated_at DESC, source_file_name DESC
+) = 1;
 
 SET min_candidate_logical_date = COALESCE(
   (SELECT MIN(logical_date) FROM fact_candidates),
@@ -335,6 +342,25 @@ ASSERT (
   WHERE grain.id IS NULL
     OR metric.id IS NULL
 ) = 0 AS 'Every fact candidate must resolve dim_grains and dim_metrics before merging.';
+
+-- Earlier runs inserted duplicate fact rows before source dedup existed; drop
+-- every duplicate but the latest ingested row so MERGE matches one target row.
+DELETE FROM {tables.fact_values}
+WHERE logical_date BETWEEN min_candidate_logical_date AND max_candidate_logical_date
+  AND id IN (
+    SELECT id
+    FROM (
+      SELECT
+        id,
+        ROW_NUMBER() OVER (
+          PARTITION BY sample_id, grain_id, metric_id, logical_date, time_grain
+          ORDER BY ingested_at DESC, id
+        ) AS row_rank
+      FROM {tables.fact_values}
+      WHERE logical_date BETWEEN min_candidate_logical_date AND max_candidate_logical_date
+    )
+    WHERE row_rank > 1
+  );
 
 MERGE {tables.fact_values} AS target
 USING (

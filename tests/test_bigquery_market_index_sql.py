@@ -88,6 +88,39 @@ class BigQueryMarketIndexSqlTest(TestCase):
         self.assertIn("VALUES (\n    GENERATE_UUID()", sql)
         self.assertIn("metric_value", sql)
 
+    def test_fact_sql_deduplicates_source_and_target_rows(self):
+        sql = fact_values_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+
+        self.assertIn(
+            "QUALIFY ROW_NUMBER() OVER (\n"
+            "  PARTITION BY sample_id, grain_id, metric_name, "
+            "logical_date, time_grain\n"
+            "  ORDER BY updated_at DESC, source_file_name DESC\n"
+            ") = 1;",
+            sql,
+        )
+        self.assertIn(
+            "DELETE FROM `example-study-proj.dl_bloomberg_data.fact_values`",
+            sql,
+        )
+        self.assertIn(
+            "PARTITION BY sample_id, grain_id, metric_id, "
+            "logical_date, time_grain",
+            sql,
+        )
+        self.assertIn("ORDER BY ingested_at DESC, id", sql)
+        self.assertIn("WHERE row_rank > 1", sql)
+        delete_index = sql.index("DELETE FROM")
+        merge_index = sql.index("MERGE `")
+        self.assertLess(
+            delete_index,
+            merge_index,
+            "target dedup must run before the merge",
+        )
+
     def test_runner_executes_script_with_configured_region(self):
         config = BigQueryTransformConfig(
             project_id=PROJECT_ID,
