@@ -1,3 +1,20 @@
+"""Mongo market index ingestion: MongoDB -> GCS NDJSON -> BigQuery.
+
+Each configured category owns one DAG. Per enabled grain target in that
+category, the pipeline extracts one full UTC day of samples from MongoDB,
+uploads them to GCS as NDJSON, scopes a BigQuery external table to that
+object, then merges dim_grains, dim_metrics, and fact_values.
+
+Grain target config files are local-only (gitignored) and live in:
+  dags/local/grain_targets/<category>.json
+
+Categories are discovered from the json file stems at parse time, so adding
+or removing a config file adds or removes the matching DAG on the next
+dag-processor refresh. Only the glob runs at parse time; the json itself is
+parsed inside the get_grain_targets task, so a malformed file fails that
+category's run, never DAG import.
+"""
+
 import re
 from datetime import timedelta, timezone
 
@@ -27,7 +44,15 @@ from common.bigquery_market_index import (
 )
 from common.bigquery_market_index_sql import RAW_DATA_SAMPLES_TABLE
 from common.gcs_object import upload_replacing_object
-from common.grain_targets import GRAIN_TARGETS_VARIABLE, parse_grain_targets
+from common.grain_targets import (
+    list_grain_target_categories,
+    load_grain_targets,
+)
+
+
+# Categories default to manual trigger; map a category name to a schedule
+# here once it is verified, e.g. {"nickel": "@daily"}.
+SCHEDULE_OVERRIDES: dict[str, str | None] = {}
 
 
 def _require_variable(name, value):
@@ -85,7 +110,12 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
     return "/".join(part for part in path_parts if part)
 
 
-def _extract_raw_data_to_gcs(target, data_interval_start, data_interval_end):
+def _extract_raw_data_to_gcs(
+    target,
+    data_interval_start,
+    data_interval_end,
+    category,
+):
     grain_id = target["grain_id"]
     dataset_id = ObjectId(target["dataset_id"])
     config = _load_ingestion_config()
@@ -109,8 +139,7 @@ def _extract_raw_data_to_gcs(target, data_interval_start, data_interval_end):
         ) is None:
             raise ValueError(
                 f"No documents match datasetId {target['dataset_id']} with "
-                f"grainId {grain_id}; check the "
-                f"{GRAIN_TARGETS_VARIABLE} variable"
+                f"grainId {grain_id}; check grain targets file {category}.json"
             )
 
         # Lead with datasetId so the find stays on the compound index over
@@ -243,98 +272,113 @@ def _run_bigquery_step(upstream_result, step_name, runner):
     }
 
 
-with DAG(
-    dag_id="mongo-data-ingestion",
-    # Logical dates are managed in zulu time because the source database
-    # keys day grained rows by utc timestamps.
-    start_date=datetime(1996, 4, 1, tz="UTC"),
-    schedule="@daily",
-    catchup=False,
-    # Concurrent runs can double-insert the same merge key through BigQuery
-    # MERGE snapshot isolation, so only one run may be active at a time.
-    max_active_runs=1,
-    default_args={
-        "retries": 2,
-        "retry_delay": timedelta(minutes=1),
-        "retry_exponential_backoff": True,
-    },
-) as dag:
-    @task()
-    def get_grain_targets() -> list[dict]:
-        raw = Variable.get(GRAIN_TARGETS_VARIABLE, default="")
-        if not raw:
-            raise ValueError(
-                f"Airflow Variable '{GRAIN_TARGETS_VARIABLE}' must be set"
+def _build_dag(category, schedule):
+    with DAG(
+        dag_id=f"mongo-data-ingestion-{category}",
+        description=(
+            "Mongo market index samples: MongoDB -> GCS NDJSON -> BigQuery "
+            f"dim and fact merges for {category} grain targets."
+        ),
+        # Logical dates are managed in zulu time because the source database
+        # keys day grained rows by utc timestamps.
+        start_date=datetime(1996, 4, 1, tz="UTC"),
+        schedule=schedule,
+        catchup=False,
+        # Concurrent runs can double-insert the same merge key through BigQuery
+        # MERGE snapshot isolation, so only one run may be active at a time.
+        # Across category DAGs the same safety comes from disjoint grain_ids,
+        # enforced by tests/test_grain_target_files.py.
+        max_active_runs=1,
+        default_args={
+            "retries": 2,
+            "retry_delay": timedelta(minutes=1),
+            "retry_exponential_backoff": True,
+        },
+        tags=["mongo", "gcs", "bigquery", category],
+    ) as dag:
+        @task()
+        def get_grain_targets() -> list[dict]:
+            return load_grain_targets(category)
+
+        @task()
+        def extract_raw_data_to_gcs(target: dict):
+            context = get_current_context()
+            # Stick to the date only: resolve the run to its zulu calendar date
+            # and extract that full utc day. The logical date is authoritative
+            # because cron trigger timetables derive the data interval from the
+            # trigger wall clock, not from an explicitly supplied logical date.
+            # Trigger logical dates must be given as utc midnights or the run
+            # resolves to the prior zulu date.
+            run_point = context["logical_date"] or context["data_interval_start"]
+            if run_point is None:
+                raise ValueError(
+                    "Run provides neither a logical date nor a data interval "
+                    "start to resolve the extraction date"
+                )
+            start_date = run_point.in_timezone("UTC").start_of("day")
+            end_date = start_date.add(days=1)
+            if run_point != start_date:
+                print(
+                    f"Logical date {run_point} is not a zulu midnight; "
+                    f"resolved to zulu date {start_date.date()}"
+                )
+            return _extract_raw_data_to_gcs(
+                target,
+                start_date,
+                end_date,
+                category,
             )
-        return parse_grain_targets(raw)
 
-    @task()
-    def extract_raw_data_to_gcs(target: dict):
-        context = get_current_context()
-        # Stick to the date only: resolve the run to its zulu calendar date
-        # and extract that full utc day. The logical date is authoritative
-        # because cron trigger timetables derive the data interval from the
-        # trigger wall clock, not from an explicitly supplied logical date.
-        # Trigger logical dates must be given as utc midnights or the run
-        # resolves to the prior zulu date.
-        run_point = context["logical_date"] or context["data_interval_start"]
-        if run_point is None:
-            raise ValueError(
-                "Run provides neither a logical date nor a data interval "
-                "start to resolve the extraction date"
+        @task(task_id="raw_data_samples")
+        def create_raw_data_samples(raw_location):
+            return _run_bigquery_step(
+                raw_location,
+                "raw_data_samples",
+                run_create_raw_data_samples,
             )
-        start_date = run_point.in_timezone("UTC").start_of("day")
-        end_date = start_date.add(days=1)
-        if run_point != start_date:
-            print(
-                f"Logical date {run_point} is not a zulu midnight; "
-                f"resolved to zulu date {start_date.date()}"
+
+        @task(task_id="dim_grains")
+        def merge_dim_grains(upstream_result):
+            return _run_bigquery_step(
+                upstream_result,
+                "dim_grains",
+                run_merge_dim_grains,
             )
-        return _extract_raw_data_to_gcs(target, start_date, end_date)
 
-    @task(task_id="raw_data_samples")
-    def create_raw_data_samples(raw_location):
-        return _run_bigquery_step(
-            raw_location,
-            "raw_data_samples",
-            run_create_raw_data_samples,
-        )
+        @task(task_id="dim_metrics")
+        def merge_dim_metrics(upstream_result):
+            return _run_bigquery_step(
+                upstream_result,
+                "dim_metrics",
+                run_merge_dim_metrics,
+            )
 
-    @task(task_id="dim_grains")
-    def merge_dim_grains(upstream_result):
-        return _run_bigquery_step(
-            upstream_result,
-            "dim_grains",
-            run_merge_dim_grains,
-        )
+        @task(task_id="fact_values")
+        def merge_fact_values(upstream_result):
+            return _run_bigquery_step(
+                upstream_result,
+                "fact_values",
+                run_merge_fact_values,
+            )
 
-    @task(task_id="dim_metrics")
-    def merge_dim_metrics(upstream_result):
-        return _run_bigquery_step(
-            upstream_result,
-            "dim_metrics",
-            run_merge_dim_metrics,
-        )
+        # The per grain chain must expand as one mapped task group: trigger
+        # rules only narrow a skipped upstream to the matching map index when
+        # both tasks share a mapped task group, so without it one empty grain
+        # would skip the transform and load tasks for every grain.
+        @task_group()
+        def ingest_grain(target: dict):
+            raw_location = extract_raw_data_to_gcs(target)
+            raw_table = create_raw_data_samples(raw_location)
+            grains = merge_dim_grains(raw_table)
+            metrics = merge_dim_metrics(grains)
+            merge_fact_values(metrics)
 
-    @task(task_id="fact_values")
-    def merge_fact_values(upstream_result):
-        return _run_bigquery_step(
-            upstream_result,
-            "fact_values",
-            run_merge_fact_values,
-        )
+        grain_targets = get_grain_targets()
+        ingest_grain.expand(target=grain_targets)
 
-    # The per grain chain must expand as one mapped task group: trigger
-    # rules only narrow a skipped upstream to the matching map index when
-    # both tasks share a mapped task group, so without it one empty grain
-    # would skip the transform and load tasks for every grain.
-    @task_group()
-    def ingest_grain(target: dict):
-        raw_location = extract_raw_data_to_gcs(target)
-        raw_table = create_raw_data_samples(raw_location)
-        grains = merge_dim_grains(raw_table)
-        metrics = merge_dim_metrics(grains)
-        merge_fact_values(metrics)
+    return dag
 
-    grain_targets = get_grain_targets()
-    ingest_grain.expand(target=grain_targets)
+
+for _category in list_grain_target_categories():
+    _dag = _build_dag(_category, SCHEDULE_OVERRIDES.get(_category))
+    globals()[_dag.dag_id] = _dag

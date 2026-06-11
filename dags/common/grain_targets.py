@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 
 
-GRAIN_TARGETS_VARIABLE = "mongo_grain_targets"
+# Grain target config files are local-only (gitignored via /dags/local/) but
+# live under dags/ so the compose volume mount makes them visible in every
+# Airflow container.
+CONFIG_DIR = Path(__file__).resolve().parent.parent / "local" / "grain_targets"
 
 _OBJECT_ID_PATTERN = re.compile(r"^[0-9a-f]{24}$")
 
@@ -13,46 +17,37 @@ _OBJECT_ID_PATTERN = re.compile(r"^[0-9a-f]{24}$")
 _FREQ_PATTERN = re.compile(r"^[A-Za-z0-9]{1,8}$")
 
 
-def parse_grain_targets(raw: str | list) -> list[dict]:
-    """Parse and validate the JSON-structured grain targets variable.
+def parse_grain_targets(raw: str | list, source: str) -> list[dict]:
+    """Parse and validate JSON-structured grain targets.
 
     Returns only enabled targets, each as a dict with dataset_id, grain_id,
-    and description keys. Raises ValueError with a precise message on any
-    malformed entry so a bad variable edit fails fast in one obvious place.
+    description, and freq keys. Raises ValueError with a precise message on
+    any malformed entry so a bad config edit fails fast in one obvious place.
     """
     if isinstance(raw, str):
         try:
             parsed = json.loads(raw)
         except json.JSONDecodeError as exc:
-            raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} must be valid json: {exc}"
-            ) from exc
+            raise ValueError(f"{source} must be valid json: {exc}") from exc
     else:
         parsed = raw
 
     if not isinstance(parsed, list) or not parsed:
-        raise ValueError(
-            f"{GRAIN_TARGETS_VARIABLE} must be a non-empty json array"
-        )
+        raise ValueError(f"{source} must be a non-empty json array")
 
     targets = []
     seen_grain_ids = set()
     for index, entry in enumerate(parsed):
         if not isinstance(entry, dict):
-            raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE}[{index}] must be a json object"
-            )
+            raise ValueError(f"{source}[{index}] must be a json object")
 
         grain_id = entry.get("grain_id")
         if not isinstance(grain_id, str) or not grain_id:
             raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE}[{index}] must set grain_id "
-                "to a non-empty string"
+                f"{source}[{index}] must set grain_id to a non-empty string"
             )
         if grain_id in seen_grain_ids:
-            raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} has duplicate grain_id {grain_id}"
-            )
+            raise ValueError(f"{source} has duplicate grain_id {grain_id}")
         seen_grain_ids.add(grain_id)
 
         dataset_id = entry.get("dataset_id")
@@ -60,37 +55,37 @@ def parse_grain_targets(raw: str | list) -> list[dict]:
             dataset_id
         ):
             raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} must set "
+                f"{source} entry {grain_id} must set "
                 "dataset_id to a twenty four character lowercase hex object id"
             )
 
         description = entry.get("description")
         if not isinstance(description, str) or not description:
             raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} must set "
+                f"{source} entry {grain_id} must set "
                 "description to a non-empty string"
             )
         # The description is embedded as a SQL string literal in the
-        # dim grains merge; reject the characters the literal builder
-        # refuses so a bad variable edit fails here, not mid pipeline.
+        # dim grains merge; reject the characters the literal builder refuses
+        # so a bad config edit fails here, not mid pipeline.
         if "'" in description or "\\" in description:
             raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} description "
+                f"{source} entry {grain_id} description "
                 "must not contain quotes or backslashes"
             )
 
         freq = entry.get("freq")
         if not isinstance(freq, str) or not _FREQ_PATTERN.fullmatch(freq):
             raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} must set freq "
+                f"{source} entry {grain_id} must set freq "
                 "to a short alphanumeric time grain string"
             )
 
         enabled = entry.get("enabled", True)
         if not isinstance(enabled, bool):
             raise ValueError(
-                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} must set "
-                "enabled to a boolean when present"
+                f"{source} entry {grain_id} must set enabled to a boolean "
+                "when present"
             )
         if not enabled:
             continue
@@ -105,8 +100,20 @@ def parse_grain_targets(raw: str | list) -> list[dict]:
         )
 
     if not targets:
-        raise ValueError(
-            f"{GRAIN_TARGETS_VARIABLE} must enable at least one grain"
-        )
+        raise ValueError(f"{source} must enable at least one grain")
 
     return targets
+
+
+def list_grain_target_categories() -> list[str]:
+    """Sorted category names derived from the json file stems."""
+    return sorted(path.stem for path in CONFIG_DIR.glob("*.json") if path.is_file())
+
+
+def load_grain_targets(category: str) -> list[dict]:
+    """Read and parse the grain targets for one configured category."""
+    config_file = CONFIG_DIR / f"{category}.json"
+    return parse_grain_targets(
+        config_file.read_text(encoding="utf-8"),
+        source=f"grain targets file {category}.json",
+    )

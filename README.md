@@ -58,18 +58,27 @@ Do not commit real target URLs, selectors, headers, cookies, credentials, respon
 
 ## Bloomberg Raw Data Ingestion
 
-The `mongo-data-ingestion` DAG extracts Mongo/Bloomberg sample rows, uploads raw
-NDJSON to GCS, and then runs reusable BigQuery scripts from `dags/common` that
-preserve the former Dataform SQL semantics. Airflow creates or replaces the
-`raw_data_samples` external table, then merges `dim_grains`, `dim_metrics`, and
-`fact_values` in order.
+The `mongo-data-ingestion-<category>` DAGs extract Mongo/Bloomberg sample rows,
+upload raw NDJSON to GCS, and then run reusable BigQuery scripts from
+`dags/common` that preserve the former Dataform SQL semantics. Airflow creates
+or replaces the `raw_data_samples` external table, then merges `dim_grains`,
+`dim_metrics`, and `fact_values` in order.
+
+A DAG factory in `dags/mongo-data-ingestion.py` builds one DAG per grain
+target category. Categories are discovered from the JSON file stems in
+`dags/local/grain_targets/` at parse time, so adding or removing a config file
+adds or removes the matching DAG on the next dag-processor refresh. The config
+files are local-only (gitignored through the `/dags/local/` rule) but live
+under `dags/` so the compose volume mount makes them visible in every Airflow
+container. A fresh clone with no config files produces no ingestion DAGs and
+no import errors. DAGs default to manual trigger; map a category to a schedule
+in `SCHEDULE_OVERRIDES` once it is verified.
 
 Configure these Airflow Variables:
 
 - `mongo_conn_id`: Mongo Airflow Connection id. Required.
 - `mongo_database_name`: Mongo database name. Required.
 - `mongo_collection_name`: Mongo collection name. Required.
-- `mongo_grain_targets`: JSON array of grain targets to extract. Required.
 - `gcp_conn_id`: Google Cloud Airflow Connection id. Required.
 - `gcs_bucket_name`: raw GCS bucket. Required.
 - `gcs_raw_prefix`: raw object prefix, for example `bloomberg/raw`. Required.
@@ -82,7 +91,8 @@ Configure these Airflow Variables:
 - `bigquery_impersonation_chain`: service account to impersonate for BigQuery
   transform-load jobs. Required.
 
-`mongo_grain_targets` holds one object per grain with `dataset_id` (the Mongo
+Each `dags/local/grain_targets/<category>.json` file holds a JSON array with
+one object per grain with `dataset_id` (the Mongo
 `datasetId` ObjectId as a twenty four character lowercase hex string),
 `grain_id` (the Mongo `grainId` string), `description` (operator
 documentation that also lands in `dim_grains.description`; quotes and
@@ -107,17 +117,22 @@ regression fails at the merge that caused it:
 ]
 ```
 
-The DAG validates the variable at the start of every run and fails fast on
-malformed entries. Extraction filters on `datasetId`, `grainId`, and `ts`
+Each DAG parses its category file at the start of every run and fails fast on
+malformed entries; only the file-stem glob runs at DAG parse time, so a
+malformed file fails that category's run, never DAG import. Extraction
+filters on `datasetId`, `grainId`, and `ts`
 together so the find stays on the collection's compound index over those
 fields instead of scanning the collection; an indexed point probe also fails
 the task loudly when a `dataset_id` does not pair with its `grain_id`, which
 distinguishes a mistyped mapping from a day with no data. A grain with no
 samples on the date skips its own transform-load tasks for that run while
-the other grains keep processing. Manage the variable
-as config-as-code: keep the canonical JSON in an ignored local file and load
-it with `airflow variables set mongo_grain_targets "$(cat <file>)"` so
-changes are reviewed and reversible instead of hand-edited in the UI.
+the other grains keep processing. A `grain_id` must appear in exactly one
+category file: every category DAG merges into the same BigQuery tables, and
+`max_active_runs=1` only serializes runs within one DAG, so disjoint grain
+ids are what keep concurrent category runs from double-inserting the same
+merge key. `tests/test_grain_target_files.py` validates the local config
+files, including that cross-file uniqueness, and skips cleanly when no files
+are present.
 
 The raw object path is deterministic:
 
@@ -152,8 +167,8 @@ UTC calendar date and extracts that full UTC day. When triggering a manual
 replay run, supply the logical date as a UTC midnight (switch the Airflow UI
 clock to UTC or pass an ISO timestamp with a `Z` suffix); a logical date at
 any other wall-clock offset resolves to the prior Zulu date and the task
-logs a notice. Only one DAG run may be active at a time, and tasks retry
-twice with exponential backoff.
+logs a notice. Only one run per category DAG may be active at a time, and
+tasks retry twice with exponential backoff.
 
 After recreating the external table, the script asserts that the external
 table row count matches the document count extracted from Mongo, so silent
