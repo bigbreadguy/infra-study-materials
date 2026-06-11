@@ -34,6 +34,13 @@ class MongoDataIngestionDagTest(unittest.TestCase):
             'config["grain_description"] = raw_location.get("grain_description")',
             dag_source,
         )
+        # The target freq rides the extract result the same way so the
+        # fact values merge writes it as the time grain.
+        self.assertIn('"time_grain": target["freq"],', dag_source)
+        self.assertIn(
+            'config["time_grain"] = raw_location.get("time_grain")',
+            dag_source,
+        )
 
     def test_dag_serializes_runs_and_extracts_full_utc_day(self):
         dag_source = DAG_FILE.read_text()

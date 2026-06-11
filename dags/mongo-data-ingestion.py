@@ -161,6 +161,7 @@ def _extract_raw_data_to_gcs(target, data_interval_start, data_interval_end):
         "document_count": len(lines),
         "grain_id": grain_id,
         "grain_description": target["description"],
+        "time_grain": target["freq"],
     }
 
 
@@ -179,6 +180,7 @@ def _bigquery_transform_config(config):
         raw_table_id=config.get("raw_table_id", RAW_DATA_SAMPLES_TABLE),
         expected_raw_row_count=config.get("expected_raw_row_count"),
         grain_description=config.get("grain_description"),
+        time_grain=config.get("time_grain"),
     )
 
 
@@ -216,6 +218,7 @@ def _run_bigquery_step(upstream_result, step_name, runner):
         config["raw_table_id"] = _grain_raw_table_id(grain_id)
 
     config["grain_description"] = raw_location.get("grain_description")
+    config["time_grain"] = raw_location.get("time_grain")
 
     # Scope the external table to the exact object this run uploaded so each
     # run only reprocesses its own interval; clearing a past run backfills it.

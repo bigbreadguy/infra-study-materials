@@ -21,6 +21,7 @@ class BigQueryTransformConfig:
     raw_table_id: str = RAW_DATA_SAMPLES_TABLE
     expected_raw_row_count: int | None = None
     grain_description: str | None = None
+    time_grain: str | None = None
 
 
 QueryBuilder = Callable[[BigQueryTransformConfig], str]
@@ -90,6 +91,7 @@ def merge_fact_values_sql(config: BigQueryTransformConfig) -> str:
         project_id=config.project_id,
         dataset_id=config.dataset_id,
         raw_table_id=config.raw_table_id,
+        time_grain=config.time_grain or "D",
     )
 
 

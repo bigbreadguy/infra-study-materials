@@ -15,6 +15,7 @@ VALID_TARGET = {
     "dataset_id": "64a1f0c2e4b0a1b2c3d4e5f6",
     "grain_id": "SX5E_Index",
     "description": "euro stoxx 50 index daily ohlcv",
+    "freq": "D",
 }
 
 
@@ -81,6 +82,19 @@ class GrainTargetsTest(TestCase):
         for bad in ("euro stoxx 50 'index'", "euro stoxx 50 \\ index"):
             entry = dict(VALID_TARGET, description=bad)
             with self.assertRaisesRegex(ValueError, "quotes or backslashes"):
+                parse_grain_targets([entry])
+
+    def test_rejects_missing_or_malformed_freq(self):
+        # The freq value lands in fact_values.time_grain through a SQL
+        # string literal, so it must be a short alphanumeric token.
+        entry = dict(VALID_TARGET)
+        del entry["freq"]
+        with self.assertRaisesRegex(ValueError, "freq"):
+            parse_grain_targets([entry])
+
+        for bad in ("", "D'", "fifteen minutes", "verylongfreq"):
+            entry = dict(VALID_TARGET, freq=bad)
+            with self.assertRaisesRegex(ValueError, "freq"):
                 parse_grain_targets([entry])
 
     def test_rejects_non_boolean_enabled(self):

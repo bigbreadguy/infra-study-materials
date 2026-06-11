@@ -299,12 +299,14 @@ def fact_values_merge_sql(
     project_id: str,
     dataset_id: str,
     raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
+    time_grain: str = "D",
 ) -> str:
     tables = MarketIndexTables(
         project_id=project_id,
         dataset_id=dataset_id,
         raw_table_id=raw_table_id,
     )
+    time_grain_literal = _sql_string(time_grain, "time_grain")
 
     return f"""DECLARE min_candidate_logical_date DATE DEFAULT NULL;
 DECLARE max_candidate_logical_date DATE DEFAULT NULL;
@@ -385,7 +387,7 @@ typed_rows AS (
       SAFE.PARSE_DATE('%Y%m%d', REGEXP_EXTRACT(source_file_name, r'raw-([0-9]{{8}})T')),
       SAFE.PARSE_DATE('%Y/%m/%d', REGEXP_EXTRACT(source_file_name, r'/([0-9]{{4}}/[0-9]{{2}}/[0-9]{{2}})/'))
     ) AS logical_date,
-    'D' AS time_grain,
+    {time_grain_literal} AS time_grain,
     CONCAT(grain_name, '_', metric_suffix) AS metric_name,
     metric_value,
     source_file_name,

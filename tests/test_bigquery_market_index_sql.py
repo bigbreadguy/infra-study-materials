@@ -212,6 +212,28 @@ class BigQueryMarketIndexSqlTest(TestCase):
             2,
         )
 
+    def test_fact_sql_takes_time_grain_from_the_target_freq(self):
+        sql = fact_values_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+            time_grain="W",
+        )
+
+        self.assertIn("'W' AS time_grain,", sql)
+
+        default_sql = fact_values_merge_sql(
+            project_id=PROJECT_ID,
+            dataset_id=DATASET_ID,
+        )
+        self.assertIn("'D' AS time_grain,", default_sql)
+
+        with self.assertRaises(ValueError):
+            fact_values_merge_sql(
+                project_id=PROJECT_ID,
+                dataset_id=DATASET_ID,
+                time_grain="W'; DROP TABLE x",
+            )
+
     def test_fact_sql_deduplicates_source_and_target_rows(self):
         sql = fact_values_merge_sql(
             project_id=PROJECT_ID,

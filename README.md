@@ -87,7 +87,10 @@ Configure these Airflow Variables:
 `grain_id` (the Mongo `grainId` string), `description` (operator
 documentation that also lands in `dim_grains.description`; quotes and
 backslashes are rejected because the value is embedded as a SQL literal),
-and an optional `enabled` boolean that defaults to true. Several grains may
+`freq` (a short alphanumeric time grain token, for example `D`, written to
+`fact_values.time_grain`; the merge keys include the time grain, so changing
+a grain's `freq` starts a new fact row series instead of rewriting the old
+one), and an optional `enabled` boolean that defaults to true. Several grains may
 share one `dataset_id`: `dim_grains` keys rows by the dataset id and grain
 name pair, and the dimension merges assert key uniqueness so an identity
 regression fails at the merge that caused it:
@@ -98,6 +101,7 @@ regression fails at the merge that caused it:
     "dataset_id": "64a1f0c2e4b0a1b2c3d4e5f6",
     "grain_id": "SX5E_Index",
     "description": "euro stoxx 50 index daily ohlcv",
+    "freq": "D",
     "enabled": true
   }
 ]

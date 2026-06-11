@@ -8,6 +8,10 @@ GRAIN_TARGETS_VARIABLE = "mongo_grain_targets"
 
 _OBJECT_ID_PATTERN = re.compile(r"^[0-9a-f]{24}$")
 
+# The freq value is embedded as a SQL string literal in the fact values
+# merge, so it stays restricted to a short alphanumeric token.
+_FREQ_PATTERN = re.compile(r"^[A-Za-z0-9]{1,8}$")
+
 
 def parse_grain_targets(raw: str | list) -> list[dict]:
     """Parse and validate the JSON-structured grain targets variable.
@@ -75,6 +79,13 @@ def parse_grain_targets(raw: str | list) -> list[dict]:
                 "must not contain quotes or backslashes"
             )
 
+        freq = entry.get("freq")
+        if not isinstance(freq, str) or not _FREQ_PATTERN.fullmatch(freq):
+            raise ValueError(
+                f"{GRAIN_TARGETS_VARIABLE} entry {grain_id} must set freq "
+                "to a short alphanumeric time grain string"
+            )
+
         enabled = entry.get("enabled", True)
         if not isinstance(enabled, bool):
             raise ValueError(
@@ -89,6 +100,7 @@ def parse_grain_targets(raw: str | list) -> list[dict]:
                 "dataset_id": dataset_id,
                 "grain_id": grain_id,
                 "description": description,
+                "freq": freq,
             }
         )
 
