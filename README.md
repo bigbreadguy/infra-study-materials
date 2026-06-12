@@ -198,3 +198,28 @@ Connections, Airflow Variables, or environment-provided credentials.
 Terraform owns the `dl_bloomberg_data` BigQuery dataset, durable target tables,
 GCS bucket access, and Airflow impersonation identities. The reusable modules in
 `dags/common` own the executable BigQuery transform-load SQL.
+
+## Grain Catalog Metadata Ingestion
+
+The `mongo-grain-metadata-ingestion` DAG (manual trigger only) snapshots the
+catalog `info` object for every enabled grain target across every category
+file and merges the BigQuery `dim_grain_metadata` table. The table keys on
+the same `(id, name)` pair as `dim_grains`, so the two join one to one; `id`
+is always the grain target's `dataset_id`, never the catalog document's own
+`process.datasetId`, which can diverge from it.
+
+It reuses the ingestion Variables above plus one more:
+
+- `mongo_catalog_collection_name`: Mongo catalog collection name. Required.
+
+Catalog documents key grain identity at `process.grainId` (not top-level),
+and several documents can share one grainId. The selection rules in
+`dags/common/grain_catalog.py`: prefer documents whose `process.datasetId`
+matches the target `dataset_id`, otherwise keep all grainId matches; the
+remaining candidates must agree on a single `info` object (metric-suffix
+variants like `X.open`/`X.close` do) or the task fails loudly for review.
+Grains with no catalog document are logged and reported in the task result
+without failing the snapshot. One NDJSON object per run lands at
+`<gcs_raw_prefix>/catalog/YYYY/MM/DD/HH/raw-...ndjson`, an external
+`raw_grain_catalog` table is scoped to exactly that object, and the merge
+asserts `(id, name)` stays unique.
