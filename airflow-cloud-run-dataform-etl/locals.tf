@@ -81,6 +81,52 @@ locals {
       ]
     }
 
+    dim_grain_metadata = {
+      friendly_name   = "Grain catalog metadata"
+      table_role      = "dimension"
+      description     = "Catalog info objects per grain, snapshotted from the Mongo catalog collection; joins dl_bloomberg_data.dim_grains one to one on (id, name)."
+      clustering      = []
+      partition_field = null
+      schema = [
+        {
+          name        = "id"
+          type        = "STRING"
+          mode        = "REQUIRED"
+          description = "Grain target dataset_id matching dl_bloomberg_data.dim_grains.id."
+        },
+        {
+          name        = "name"
+          type        = "STRING"
+          mode        = "REQUIRED"
+          description = "Source Mongo grainId matching dl_bloomberg_data.dim_grains.name."
+        },
+        {
+          name        = "catalog_id"
+          type        = "STRING"
+          mode        = "NULLABLE"
+          description = "Catalog document _id variable code, for example Com_LME_Cu_Cash."
+        },
+        {
+          name        = "catalog_name"
+          type        = "STRING"
+          mode        = "NULLABLE"
+          description = "Human-readable catalog variable name."
+        },
+        {
+          name        = "info"
+          type        = "JSON"
+          mode        = "NULLABLE"
+          description = "Catalog info object (source, unit, currency, ...) preserved as-is."
+        },
+        {
+          name        = "ingested_at"
+          type        = "TIMESTAMP"
+          mode        = "REQUIRED"
+          description = "Timestamp when the BigQuery transform-load SQL upserted the row."
+        },
+      ]
+    }
+
     dim_metrics = {
       friendly_name   = "Securities metrics"
       table_role      = "dimension"
