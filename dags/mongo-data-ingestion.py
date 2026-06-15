@@ -5,10 +5,13 @@ full UTC day of samples for every enabled grain target in the category
 over a single MongoDB connection and uploads one NDJSON object per grain
 to GCS; the daily volume per grain is a handful of documents, so per task
 fixed costs (worker start, variable fetches, Mongo connection) dominate
-and the batch pays them once per category instead of once per grain.
-Mapped per grain chains then read each object through a per-query
-temporary external table definition (no persistent raw table) and merge
-dim_grains, dim_metrics, and fact_values.
+and the batch pays them once per category instead of once per grain. The
+extract targets the previous completed UTC day (D-1), not the logical
+date's own day, because the @daily schedule fires at 00:00Z before the
+source has published the in-progress day. Mapped per grain chains then
+read each object through a per-query temporary external table definition
+(no persistent raw table) and merge dim_grains, dim_metrics, and
+fact_values.
 
 Grain target config files are local-only (gitignored) and live in:
   dags/local/grain_targets/<category>.json
@@ -54,6 +57,11 @@ from common.grain_targets import (
 # Categories default to manual trigger; map a category name to a schedule
 # here once it is verified, e.g. {"nickel": "@daily"}.
 SCHEDULE_OVERRIDES: dict[str, str | None] = {}
+
+# The @daily schedule fires at 00:00Z, the start of the logical date's
+# own day, before the source has published it. Extract the previous
+# completed zulu day instead.
+EXTRACTION_LOOKBACK_DAYS = 1
 
 
 def _require_variable(name, value):
@@ -327,25 +335,30 @@ def _build_dag(category, schedule):
         @task()
         def extract_raw_data_to_gcs() -> list[dict]:
             context = get_current_context()
-            # Stick to the date only: resolve the run to its zulu calendar date
-            # and extract that full utc day. The logical date is authoritative
-            # because cron trigger timetables derive the data interval from the
-            # trigger wall clock, not from an explicitly supplied logical date.
-            # Trigger logical dates must be given as utc midnights or the run
-            # resolves to the prior zulu date.
+            # The logical date is authoritative because cron trigger
+            # timetables derive the data interval from the trigger wall clock,
+            # not from an explicitly supplied logical date. Trigger logical
+            # dates must be given as utc midnights or the run resolves to the
+            # prior zulu date.
             run_point = context["logical_date"] or context["data_interval_start"]
             if run_point is None:
                 raise ValueError(
                     "Run provides neither a logical date nor a data interval "
                     "start to resolve the extraction date"
                 )
-            start_date = run_point.in_timezone("UTC").start_of("day")
-            end_date = start_date.add(days=1)
-            if run_point != start_date:
+            # Resolve the run to its zulu calendar day, then step back one day.
+            # The schedule fires at 00:00Z (09:00 KST) at the very start of the
+            # logical date's day, when the source has not yet published that
+            # day's samples. Targeting the previous, completed zulu day (D-1)
+            # gives the source a full day to populate before extraction.
+            run_day = run_point.in_timezone("UTC").start_of("day")
+            if run_point != run_day:
                 print(
                     f"Logical date {run_point} is not a zulu midnight; "
-                    f"resolved to zulu date {start_date.date()}"
+                    f"resolved to zulu date {run_day.date()}"
                 )
+            start_date = run_day.subtract(days=EXTRACTION_LOOKBACK_DAYS)
+            end_date = start_date.add(days=1)
             return _extract_raw_data_to_gcs(
                 load_grain_targets(category),
                 start_date,
