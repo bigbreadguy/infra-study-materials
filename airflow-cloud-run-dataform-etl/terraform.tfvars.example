@@ -75,3 +75,23 @@ extra_labels = {
 # bigquery_transform_service_account_id           = "sa-airflow-bq-transformer"
 # bigquery_transform_service_account_display_name = "Airflow BigQuery transformer"
 # raw_object_prefix                               = "bloomberg/raw"
+
+# Scraper Cloud Run Job (Phase 4). Defaults create:
+#   - a "scrape" GCS bucket (added to var.buckets)
+#   - an Artifact Registry docker repo "scraper"
+#   - a generic "scraper" Cloud Run Job + its sa-scraper-job identity
+#   - empty secrets scrape-kosa-user / scrape-kosa-password (values added out of band)
+# Add a target by appending to scraper_targets; no job/IAM change is needed because
+# the job SA's secretAccessor is scoped to the scrape- prefix via an IAM Condition.
+# scraper_artifact_repository_id = "scraper"
+# scraper_image_name             = "dfml-scraper"
+# scraper_image_tag              = "latest"
+# scraper_job_name               = "scraper"
+# scraper_service_account_id     = "sa-scraper-job"
+# scraper_scrape_bucket_key      = "scrape"
+# scraper_secret_name_prefix     = "scrape-"
+# scraper_targets                = ["kosa"]
+# scraper_job_cpu                = "2"
+# scraper_job_memory             = "2Gi"
+# scraper_job_timeout_seconds    = 1800
+# scraper_job_max_retries        = 0

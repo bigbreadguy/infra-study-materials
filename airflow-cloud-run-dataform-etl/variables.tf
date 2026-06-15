@@ -138,6 +138,16 @@ variable "buckets" {
       versioning_enabled = false
       retention_days     = 7
     }
+
+    # Scraper control plane: Cloud Run Job request + result objects
+    # (scrape/requests/, scrape/results/). One whole-bucket TTL covers both
+    # prefixes; downstream loads results to BigQuery before they expire. In prod
+    # you might split per-prefix lifecycle rules — here one age rule keeps it simple.
+    scrape = {
+      name_suffix        = "scrape"
+      versioning_enabled = false
+      retention_days     = 30
+    }
   }
 
   validation {
@@ -379,5 +389,142 @@ variable "raw_object_prefix" {
       && !can(regex("//", trim(var.raw_object_prefix, "/")))
     )
     error_message = "raw_object_prefix must be a non-empty GCS prefix using only letters, numbers, underscore, dot, slash, equals, or hyphen, without double slashes."
+  }
+}
+
+###############################################################################
+# Scraper Cloud Run Job (Phase 4)
+#
+# A single, recipe-agnostic Cloud Run Job runs the dfml-scraper image. Targets
+# are data (recipes + secrets), so adding a target needs no change to the job or
+# its IAM. See the scraper repo PRD docs/scraper-job-prd.md.
+###############################################################################
+
+variable "scraper_artifact_repository_id" {
+  description = "Artifact Registry Docker repository id that hosts the scraper image."
+  type        = string
+  default     = "scraper"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{0,62}$", var.scraper_artifact_repository_id))
+    error_message = "scraper_artifact_repository_id must start with a lower-case letter and use only lower-case letters, numbers, or hyphens."
+  }
+}
+
+variable "scraper_image_name" {
+  description = "Image name (without registry/repo prefix) for the scraper container."
+  type        = string
+  default     = "dfml-scraper"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{0,62}$", var.scraper_image_name))
+    error_message = "scraper_image_name must be a lower-case image name."
+  }
+}
+
+variable "scraper_image_tag" {
+  description = "Image tag deployed to the scraper Cloud Run Job. Pin to a digest or version in real use; latest is convenient for the study sandbox."
+  type        = string
+  default     = "latest"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]{1,128}$", var.scraper_image_tag))
+    error_message = "scraper_image_tag must be a valid container tag."
+  }
+}
+
+variable "scraper_job_name" {
+  description = "Cloud Run Job name for the generic scraper."
+  type        = string
+  default     = "scraper"
+
+  validation {
+    condition     = can(regex("^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$", var.scraper_job_name))
+    error_message = "scraper_job_name must be a valid Cloud Run job name (lower-case, hyphens allowed)."
+  }
+}
+
+variable "scraper_service_account_id" {
+  description = "Service account id the scraper Cloud Run Job runs as."
+  type        = string
+  default     = "sa-scraper-job"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", var.scraper_service_account_id))
+    error_message = "scraper_service_account_id must be 6 to 30 characters, start with a lower-case letter, end with a lower-case letter or number, and use only lower-case letters, numbers, or hyphens."
+  }
+}
+
+variable "scraper_scrape_bucket_key" {
+  description = "Logical key in var.buckets the scraper reads requests from and writes results to."
+  type        = string
+  default     = "scrape"
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9_]{0,30}$", var.scraper_scrape_bucket_key))
+    error_message = "scraper_scrape_bucket_key must use the same lower-case logical key format as var.buckets."
+  }
+}
+
+variable "scraper_secret_name_prefix" {
+  description = "Shared name prefix for all scraper target secrets. The job SA's secretAccessor is scoped to this prefix via an IAM Condition, so new target secrets need no IAM change."
+  type        = string
+  default     = "scrape-"
+
+  validation {
+    condition     = can(regex("^scrape-[a-z0-9-]*$", var.scraper_secret_name_prefix))
+    error_message = "scraper_secret_name_prefix must start with 'scrape-' (the IAM Condition keys off this prefix)."
+  }
+}
+
+variable "scraper_targets" {
+  description = "Scraper targets to provision credential secrets for. Each target T creates empty secrets <prefix><T>-user and <prefix><T>-password; the values are added out of band (never in Terraform)."
+  type        = set(string)
+  default     = ["kosa"]
+
+  validation {
+    condition = alltrue([
+      for t in var.scraper_targets : can(regex("^[a-z][a-z0-9-]{0,40}$", t))
+    ])
+    error_message = "each scraper target must be a lower-case identifier."
+  }
+}
+
+variable "scraper_job_cpu" {
+  description = "vCPU for the scraper Cloud Run Job task. Chromium renders faster with >=2."
+  type        = string
+  default     = "2"
+}
+
+variable "scraper_job_memory" {
+  description = "Memory for the scraper Cloud Run Job task. Chromium needs >=2Gi."
+  type        = string
+  default     = "2Gi"
+
+  validation {
+    condition     = can(regex("^[0-9]+(Mi|Gi)$", var.scraper_job_memory))
+    error_message = "scraper_job_memory must be like 2Gi or 2048Mi."
+  }
+}
+
+variable "scraper_job_timeout_seconds" {
+  description = "Per-task timeout for the scraper job. Raised well above Cloud Run's 10-min default for slow browser flows (target 30-60 min)."
+  type        = number
+  default     = 1800
+
+  validation {
+    condition     = var.scraper_job_timeout_seconds >= 600 && var.scraper_job_timeout_seconds <= 3600
+    error_message = "scraper_job_timeout_seconds must be between 600 (10 min) and 3600 (60 min)."
+  }
+}
+
+variable "scraper_job_max_retries" {
+  description = "Cloud Run task max retries. Kept at 0 so Airflow is the single retry authority (auth failures must not retry; login is a side effect)."
+  type        = number
+  default     = 0
+
+  validation {
+    condition     = var.scraper_job_max_retries >= 0 && var.scraper_job_max_retries <= 3
+    error_message = "scraper_job_max_retries must be between 0 and 3."
   }
 }

@@ -3,8 +3,11 @@ locals {
   # serviceusage must be enabled for Terraform to manage other APIs. Add per
   # phase as resources grow.
   required_project_services = toset([
+    "artifactregistry.googleapis.com",
     "bigquery.googleapis.com",
     "iam.googleapis.com",
+    "run.googleapis.com",
+    "secretmanager.googleapis.com",
     "serviceusage.googleapis.com",
     "storage.googleapis.com",
   ])
@@ -247,5 +250,10 @@ locals {
     airflow_gcs_uses_custom_cru_role    = local.airflow_gcs_uses_custom_cru_role
     airflow_gcs_delete_permission       = (local.airflow_gcs_uses_custom_cru_role && var.airflow_gcs_allow_object_replacement) || local.airflow_gcs_bucket_role == "roles/storage.objectUser" || local.airflow_gcs_bucket_role == "roles/storage.objectAdmin"
     creates_airflow_service_account_key = var.create_airflow_service_account_key
+    manages_artifact_registry           = true
+    manages_scraper_job                 = true
+    manages_scraper_identity            = true
+    manages_scraper_secret_containers   = true
+    scraper_secret_values_in_terraform  = false
   }
 }

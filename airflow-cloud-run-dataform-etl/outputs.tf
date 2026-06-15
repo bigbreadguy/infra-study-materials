@@ -113,6 +113,58 @@ output "bigquery_transform_load" {
   }
 }
 
+###############################################################################
+# Scraper Cloud Run Job (Phase 4)
+###############################################################################
+
+output "scraper_artifact_repository" {
+  description = "Artifact Registry Docker repo for the scraper image."
+  value = {
+    id       = google_artifact_registry_repository.scraper.repository_id
+    location = google_artifact_registry_repository.scraper.location
+  }
+}
+
+output "scraper_image_uri" {
+  description = "Full image URI the Cloud Run Job pulls. Build and push this tag before applying the job."
+  value       = local.scraper_image_uri
+}
+
+output "scraper_job" {
+  description = "Scraper Cloud Run Job coordinates for the orchestrating DAG."
+  value = {
+    name     = google_cloud_run_v2_job.scraper.name
+    location = google_cloud_run_v2_job.scraper.location
+    project  = var.project_id
+  }
+}
+
+output "scraper_service_account_email" {
+  description = "Runtime identity of the scraper Cloud Run Job."
+  value       = google_service_account.scraper_job.email
+}
+
+output "scraper_scrape_bucket_name" {
+  description = "Bucket holding scrape/requests and scrape/results objects."
+  value       = local.scrape_bucket_name
+}
+
+output "scraper_secret_ids" {
+  description = "Per-target credential secret ids created (values added out of band)."
+  value       = sort([for s in google_secret_manager_secret.scraper : s.secret_id])
+}
+
+output "scraper_airflow_variables" {
+  description = "Values for the WI3 scraper DAG's Airflow Variables. gcp_conn_id identity is the orchestrator SA."
+  value = {
+    gcp_connection_service_account = google_service_account.airflow_orchestrator.email
+    cloud_run_job_name             = google_cloud_run_v2_job.scraper.name
+    cloud_run_region               = google_cloud_run_v2_job.scraper.location
+    gcp_project_id                 = var.project_id
+    scrape_bucket_name             = local.scrape_bucket_name
+  }
+}
+
 output "safety_contract" {
   description = "Safety confirmations and boundaries for this lesson."
   value       = local.safety_contract
