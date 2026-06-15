@@ -36,7 +36,7 @@ def parse_grain_targets(raw: str | list, source: str) -> list[dict]:
         raise ValueError(f"{source} must be a non-empty json array")
 
     targets = []
-    seen_grain_ids = set()
+    seen_grain_keys = set()
     for index, entry in enumerate(parsed):
         if not isinstance(entry, dict):
             raise ValueError(f"{source}[{index}] must be a json object")
@@ -46,9 +46,6 @@ def parse_grain_targets(raw: str | list, source: str) -> list[dict]:
             raise ValueError(
                 f"{source}[{index}] must set grain_id to a non-empty string"
             )
-        if grain_id in seen_grain_ids:
-            raise ValueError(f"{source} has duplicate grain_id {grain_id}")
-        seen_grain_ids.add(grain_id)
 
         dataset_id = entry.get("dataset_id")
         if not isinstance(dataset_id, str) or not _OBJECT_ID_PATTERN.fullmatch(
@@ -58,6 +55,18 @@ def parse_grain_targets(raw: str | list, source: str) -> list[dict]:
                 f"{source} entry {grain_id} must set "
                 "dataset_id to a twenty four character lowercase hex object id"
             )
+
+        # Grain identity is the dataset id and grain id pair, matching the
+        # Mongo compound key and the BigQuery dim merge keys: the same
+        # grain_id legitimately recurs under several datasets (e.g. one
+        # copper_total_prod per mining company).
+        grain_key = (dataset_id, grain_id)
+        if grain_key in seen_grain_keys:
+            raise ValueError(
+                f"{source} has duplicate grain_id {grain_id} "
+                f"for dataset_id {dataset_id}"
+            )
+        seen_grain_keys.add(grain_key)
 
         description = entry.get("description")
         if not isinstance(description, str) or not description:

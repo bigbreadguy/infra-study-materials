@@ -61,9 +61,29 @@ class GrainTargetsTest(TestCase):
         with self.assertRaisesRegex(ValueError, "must set grain_id"):
             parse_grain_targets([entry], SOURCE)
 
-    def test_rejects_duplicate_grain_id(self):
+    def test_rejects_duplicate_dataset_and_grain_id_pair(self):
         with self.assertRaisesRegex(ValueError, "duplicate grain_id"):
             parse_grain_targets([VALID_TARGET, dict(VALID_TARGET)], SOURCE)
+
+    def test_accepts_same_grain_id_under_different_datasets(self):
+        # Grain identity is the dataset id and grain id pair: the same
+        # grain_id legitimately recurs across datasets, e.g. one
+        # copper_total_prod per mining company.
+        second = dict(
+            VALID_TARGET,
+            dataset_id="64a1f0c2e4b0a1b2c3d4e5f7",
+            description="euro stoxx 50 index from a sibling dataset",
+        )
+
+        targets = parse_grain_targets([VALID_TARGET, second], SOURCE)
+
+        self.assertEqual(
+            [(t["dataset_id"], t["grain_id"]) for t in targets],
+            [
+                ("64a1f0c2e4b0a1b2c3d4e5f6", "SX5E_Index"),
+                ("64a1f0c2e4b0a1b2c3d4e5f7", "SX5E_Index"),
+            ],
+        )
 
     def test_rejects_malformed_dataset_id(self):
         for bad in ("", "xyz", "64A1F0C2E4B0A1B2C3D4E5F6", "64a1f0c2"):
