@@ -19,8 +19,10 @@ locals {
     "${var.scraper_image_name}:${var.scraper_image_tag}",
   ])
 
-  # deepfl-infra raw data lake naming: dfml-<environment>-raw (e.g. dfml-dev-raw).
-  scrape_bucket_name = coalesce(var.scraper_raw_bucket_name, "dfml-${var.environment}-raw")
+  # deepfl-infra raw data lake naming (dfml-<env>-raw), project-prefixed for global
+  # GCS uniqueness since the bare dfml-dev-raw name is already taken by the company
+  # project. Deepfl itself uses the ${project_id}-* prefix for the same reason.
+  scrape_bucket_name = coalesce(var.scraper_raw_bucket_name, "${var.project_id}-dfml-${var.environment}-raw")
 }
 
 # Project number is needed for the Secret Manager IAM Condition: the resource name

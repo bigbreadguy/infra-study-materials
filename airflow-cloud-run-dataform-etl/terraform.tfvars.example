@@ -78,7 +78,7 @@ extra_labels = {
 
 # Scraper Cloud Run Job (Phase 4). Resource names follow deepfl-infra conventions.
 # Defaults create:
-#   - the dfml-dev-raw GCS bucket (raw data lake; scrape/requests + scrape/results)
+#   - the <project_id>-dfml-dev-raw GCS bucket (raw lake; scrape/requests + scrape/results)
 #   - a shared Artifact Registry docker repo "dev-dfml-docker"
 #   - a generic "scraper" Cloud Run Job + its scraper-sa identity
 #   - empty secrets scrape-kosa-user / scrape-kosa-password (values added out of band)
@@ -89,7 +89,7 @@ extra_labels = {
 # scraper_image_tag              = "latest"
 # scraper_job_name               = "scraper"
 # scraper_service_account_id     = "scraper-sa"
-# scraper_raw_bucket_name        = null   # null => dfml-<environment>-raw
+# scraper_raw_bucket_name        = null   # null => <project_id>-dfml-<environment>-raw
 # scraper_secret_name_prefix     = "scrape-"
 # scraper_targets                = ["kosa"]
 # scraper_job_cpu                = "2"

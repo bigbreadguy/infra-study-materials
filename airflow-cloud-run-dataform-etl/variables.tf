@@ -446,7 +446,7 @@ variable "scraper_service_account_id" {
 }
 
 variable "scraper_raw_bucket_name" {
-  description = "GCS bucket the scraper reads requests from and writes results to, under scrape/ prefixes. Defaults to the deepfl-infra raw data lake name dfml-<environment>-raw."
+  description = "GCS bucket the scraper reads requests from and writes results to, under scrape/ prefixes. Default null => <project_id>-dfml-<environment>-raw (deepfl-infra raw-lake naming, project-prefixed for global GCS uniqueness)."
   type        = string
   default     = null
 
