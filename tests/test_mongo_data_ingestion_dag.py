@@ -32,7 +32,9 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         # The find criteria must include datasetId so the query stays on the
         # compound index over datasetId, grainId, and ts.
         self.assertIn('"datasetId": dataset_id,', dag_source)
-        self.assertIn("ingest_grain.expand(target=grain_targets)", dag_source)
+        self.assertIn(
+            "transform_grain.expand(raw_location=raw_locations)", dag_source
+        )
         # The curated description rides the extract result so the dim
         # grains merge can prefer it over the raw document description.
         self.assertIn('"grain_description": target["description"],', dag_source)
@@ -75,28 +77,39 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         self.assertIn("schedule=schedule", dag_source)
         self.assertIn("globals()[_dag.dag_id] = _dag", dag_source)
 
-    def test_extraction_skips_grain_with_no_samples_in_interval(self):
+    def test_batch_extraction_omits_quiet_grains_without_failing(self):
         dag_source = DAG_FILE.read_text()
 
-        # A grain with no samples at the logical date must skip, not fail,
-        # so the per index transform and load tasks sit out the run while
-        # other grains proceed. The point probe for a wrong dataset id to
-        # grain id mapping must keep failing loudly.
-        self.assertIn("from airflow.sdk.exceptions import AirflowSkipException", dag_source)
+        # The category extracts in one batch task over a single Mongo
+        # session: per task fixed costs (worker start, variable fetches,
+        # Mongo connection) dominate the tiny daily volume, so they must be
+        # paid once per category, not once per grain.
+        self.assertIn("for target in targets:", dag_source)
+        self.assertNotIn("get_grain_targets", dag_source)
+        # A grain with no samples at the logical date is a legitimate quiet
+        # day: it yields no raw location, so its transform chain never
+        # expands while other grains proceed. The point probe for a wrong
+        # dataset id to grain id mapping must keep failing loudly.
+        self.assertNotIn("AirflowSkipException", dag_source)
         self.assertIn("if not lines:", dag_source)
-        self.assertIn("raise AirflowSkipException(", dag_source)
+        self.assertIn("quiet_grains.append(", dag_source)
         self.assertIn("raise ValueError(", dag_source)
-        # Trigger rules only narrow a skipped upstream to the matching map
-        # index when both tasks share a mapped task group; without it one
-        # empty grain skips the transform and load tasks for every grain.
+        # The per grain transform chain still expands as one mapped task
+        # group so each raw location rides one chain end to end.
         self.assertIn("@task_group()", dag_source)
-        self.assertIn("def ingest_grain(target: dict):", dag_source)
+        self.assertIn("def transform_grain(raw_location: dict):", dag_source)
 
-    def test_dag_scopes_raw_inputs_through_config_without_module_patch(self):
+    def test_dag_reads_raw_through_per_query_temp_definition(self):
         dag_source = DAG_FILE.read_text()
 
-        self.assertNotIn("bq_sql.RAW_DATA_SAMPLES_TABLE", dag_source)
-        self.assertIn('config["raw_table_id"] = _grain_raw_table_id(grain_id)', dag_source)
+        # No persistent raw external tables: each BigQuery job resolves the
+        # raw name through a temporary external table definition scoped to
+        # the one object this run uploaded, so concurrent grain chains never
+        # share raw table state and the dataset stays free of raw_* clutter.
+        self.assertNotIn("_grain_raw_table_id", dag_source)
+        self.assertNotIn("raw_table_id", dag_source)
+        self.assertNotIn("CREATE OR REPLACE EXTERNAL TABLE", dag_source)
+        self.assertIn("run_validate_raw_data", dag_source)
         self.assertIn(
             "gs://{raw_location['bucket']}/{raw_location['object']}",
             dag_source,
@@ -124,12 +137,11 @@ class MongoDataIngestionDagTest(unittest.TestCase):
         spec.loader.exec_module(module)
 
         expected_task_ids = {
-            "get_grain_targets",
-            "ingest_grain.extract_raw_data_to_gcs",
-            "ingest_grain.raw_data_samples",
-            "ingest_grain.dim_grains",
-            "ingest_grain.dim_metrics",
-            "ingest_grain.fact_values",
+            "extract_raw_data_to_gcs",
+            "transform_grain.validate_raw_data",
+            "transform_grain.dim_grains",
+            "transform_grain.dim_metrics",
+            "transform_grain.fact_values",
         }
 
         self.assertFalse(hasattr(module, "dag"))

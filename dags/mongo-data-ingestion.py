@@ -1,9 +1,14 @@
 """Mongo market index ingestion: MongoDB -> GCS NDJSON -> BigQuery.
 
-Each configured category owns one DAG. Per enabled grain target in that
-category, the pipeline extracts one full UTC day of samples from MongoDB,
-uploads them to GCS as NDJSON, scopes a BigQuery external table to that
-object, then merges dim_grains, dim_metrics, and fact_values.
+Each configured category owns one DAG. One batch extract task pulls one
+full UTC day of samples for every enabled grain target in the category
+over a single MongoDB connection and uploads one NDJSON object per grain
+to GCS; the daily volume per grain is a handful of documents, so per task
+fixed costs (worker start, variable fetches, Mongo connection) dominate
+and the batch pays them once per category instead of once per grain.
+Mapped per grain chains then read each object through a per-query
+temporary external table definition (no persistent raw table) and merge
+dim_grains, dim_metrics, and fact_values.
 
 Grain target config files are local-only (gitignored) and live in:
   dags/local/grain_targets/<category>.json
@@ -11,11 +16,10 @@ Grain target config files are local-only (gitignored) and live in:
 Categories are discovered from the json file stems at parse time, so adding
 or removing a config file adds or removes the matching DAG on the next
 dag-processor refresh. Only the glob runs at parse time; the json itself is
-parsed inside the get_grain_targets task, so a malformed file fails that
-category's run, never DAG import.
+parsed inside the extract task, so a malformed file fails that category's
+run, never DAG import.
 """
 
-import re
 from datetime import timedelta, timezone
 
 from pendulum import datetime
@@ -24,8 +28,6 @@ from pendulum import datetime
 from airflow.sdk import DAG, get_current_context, task, task_group
 # pyrefly: ignore [missing-import]
 from airflow.sdk import Variable
-# pyrefly: ignore [missing-import]
-from airflow.sdk.exceptions import AirflowSkipException
 # pyrefly: ignore [missing-import]
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 # pyrefly: ignore [missing-import]
@@ -37,12 +39,11 @@ from bson import ObjectId, json_util
 
 from common.bigquery_market_index import (
     BigQueryTransformConfig,
-    run_create_raw_data_samples,
     run_merge_dim_grains,
     run_merge_dim_metrics,
     run_merge_fact_values,
+    run_validate_raw_data,
 )
-from common.bigquery_market_index_sql import RAW_DATA_SAMPLES_TABLE
 from common.gcs_object import upload_replacing_object
 from common.grain_targets import (
     list_grain_target_categories,
@@ -110,7 +111,8 @@ def _build_gcs_object_name(logical_date, grain_id, raw_prefix):
     return "/".join(part for part in path_parts if part)
 
 
-def _extract_raw_data_to_gcs(
+def _extract_grain_lines(
+    collection,
     target,
     data_interval_start,
     data_interval_end,
@@ -118,32 +120,22 @@ def _extract_raw_data_to_gcs(
 ):
     grain_id = target["grain_id"]
     dataset_id = ObjectId(target["dataset_id"])
-    config = _load_ingestion_config()
-    bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
-    object_name = _build_gcs_object_name(
-        data_interval_start, grain_id, config["gcs_raw_prefix"]
-    )
-    print(f"Extracting data for interval: {data_interval_start} to {data_interval_end}")
-    lines = []
 
-    with MongoHook(mongo_conn_id=config["mongo_conn_id"]) as hook:
-        collection = hook.get_conn().get_database(
-            config["mongo_database_name"]
-        ).get_collection(config["mongo_collection_name"])
+    # An indexed point probe separates a wrong dataset id to grain id
+    # mapping, which must fail loudly, from a day with no data, which is
+    # a legitimate quiet day.
+    if collection.find_one(
+        {"datasetId": dataset_id, "grainId": grain_id}, {"_id": 1}
+    ) is None:
+        raise ValueError(
+            f"No documents match datasetId {target['dataset_id']} with "
+            f"grainId {grain_id}; check grain targets file {category}.json"
+        )
 
-        # An indexed point probe separates a wrong dataset id to grain id
-        # mapping, which must fail loudly, from a day with no data, which is
-        # a legitimate skip.
-        if collection.find_one(
-            {"datasetId": dataset_id, "grainId": grain_id}, {"_id": 1}
-        ) is None:
-            raise ValueError(
-                f"No documents match datasetId {target['dataset_id']} with "
-                f"grainId {grain_id}; check grain targets file {category}.json"
-            )
-
-        # Lead with datasetId so the find stays on the compound index over
-        # datasetId, grainId, and ts.
+    # Lead with datasetId so the find stays on the compound index over
+    # datasetId, grainId, and ts.
+    return [
+        json_util.dumps(doc)
         for doc in collection.find({
             "datasetId": dataset_id,
             "grainId": grain_id,
@@ -151,47 +143,91 @@ def _extract_raw_data_to_gcs(
                 "$gte": data_interval_start,
                 "$lt": data_interval_end,
             }
-        }):
-            lines.append(json_util.dumps(doc))
+        })
+    ]
 
-    print(f"Extracted {len(lines)} raw documents from Mongo")
 
-    # A grain with no samples in the interval is a legitimate quiet day.
-    # Trigger rules only resolve upstream skips per map index inside a
-    # common mapped task group, so this skip stays scoped to one grain only
-    # because the whole chain expands as one task group. Skipped runs leave
-    # any previously uploaded object for the interval in place.
-    if not lines:
-        raise AirflowSkipException(
-            f"No samples for grainId {grain_id} between "
-            f"{data_interval_start} and {data_interval_end}"
-        )
+def _extract_raw_data_to_gcs(
+    targets,
+    data_interval_start,
+    data_interval_end,
+    category,
+):
+    """Extract the interval for every grain target over one Mongo session.
 
-    payload = "\n".join(lines) + "\n"
+    Returns one raw location per grain with samples. A grain with no samples
+    in the interval is a legitimate quiet day: it yields no raw location, so
+    the downstream mapped transform chains expand only over grains with
+    data. Quiet runs leave any previously uploaded object for the interval
+    in place. One bad grain (wrong mapping, failed upload) fails the whole
+    category extract; retries rerun every grain, which stays idempotent
+    because uploads replace the per grain interval object.
+    """
+    config = _load_ingestion_config()
+    bucket_name = _require_variable("gcs_bucket_name", config["gcs_bucket_name"])
+    print(f"Extracting data for interval: {data_interval_start} to {data_interval_end}")
 
     gcs_hook = GCSHook(
         gcp_conn_id=config["gcp_conn_id"],
         impersonation_chain=config["gcs_impersonation_chain"],
     )
-    uploaded_object_name = upload_replacing_object(
-        gcs_hook,
-        bucket_name=bucket_name,
-        object_name=object_name,
-        data=payload,
-        mime_type="application/x-ndjson",
-    )
+    raw_locations = []
+    quiet_grains = []
+
+    with MongoHook(mongo_conn_id=config["mongo_conn_id"]) as hook:
+        collection = hook.get_conn().get_database(
+            config["mongo_database_name"]
+        ).get_collection(config["mongo_collection_name"])
+
+        for target in targets:
+            grain_id = target["grain_id"]
+            lines = _extract_grain_lines(
+                collection,
+                target,
+                data_interval_start,
+                data_interval_end,
+                category,
+            )
+
+            if not lines:
+                quiet_grains.append(grain_id)
+                continue
+
+            object_name = _build_gcs_object_name(
+                data_interval_start, grain_id, config["gcs_raw_prefix"]
+            )
+            payload = "\n".join(lines) + "\n"
+            uploaded_object_name = upload_replacing_object(
+                gcs_hook,
+                bucket_name=bucket_name,
+                object_name=object_name,
+                data=payload,
+                mime_type="application/x-ndjson",
+            )
+            print(
+                f"Uploaded {len(lines)} documents to "
+                f"gs://{bucket_name}/{uploaded_object_name}"
+            )
+            raw_locations.append({
+                "bucket": bucket_name,
+                "object": uploaded_object_name,
+                "document_count": len(lines),
+                "grain_id": grain_id,
+                "grain_description": target["description"],
+                "time_grain": target["freq"],
+            })
+
+    if quiet_grains:
+        print(
+            f"No samples between {data_interval_start} and "
+            f"{data_interval_end} for {len(quiet_grains)} quiet grains: "
+            f"{', '.join(quiet_grains)}"
+        )
     print(
-        f"Uploaded {len(lines)} documents to "
-        f"gs://{bucket_name}/{uploaded_object_name}"
+        f"Extracted {len(raw_locations)} grain objects "
+        f"out of {len(targets)} targets"
     )
-    return {
-        "bucket": bucket_name,
-        "object": uploaded_object_name,
-        "document_count": len(lines),
-        "grain_id": grain_id,
-        "grain_description": target["description"],
-        "time_grain": target["freq"],
-    }
+    return raw_locations
 
 
 def _bigquery_transform_config(config):
@@ -206,7 +242,6 @@ def _bigquery_transform_config(config):
         ),
         region=_require_variable("bigquery_region", config["bigquery_region"]),
         raw_gcs_uri=_require_variable("raw_gcs_uri", config["raw_gcs_uri"]),
-        raw_table_id=config.get("raw_table_id", RAW_DATA_SAMPLES_TABLE),
         expected_raw_row_count=config.get("expected_raw_row_count"),
         grain_description=config.get("grain_description"),
         time_grain=config.get("time_grain"),
@@ -233,26 +268,19 @@ def _raw_location_from_upstream(upstream_result):
     return upstream_result
 
 
-def _grain_raw_table_id(grain_id):
-    normalized_grain_id = re.sub(r"[^a-zA-Z0-9]", "_", grain_id)
-    return f"{RAW_DATA_SAMPLES_TABLE}_{normalized_grain_id}"
-
-
 def _run_bigquery_step(upstream_result, step_name, runner):
     raw_location = _raw_location_from_upstream(upstream_result)
-    grain_id = raw_location.get("grain_id")
     config = _load_ingestion_config()
-
-    if grain_id:
-        config["raw_table_id"] = _grain_raw_table_id(grain_id)
 
     config["grain_description"] = raw_location.get("grain_description")
     config["time_grain"] = raw_location.get("time_grain")
 
-    # Scope the external table to the exact object this run uploaded so each
-    # run only reprocesses its own interval; clearing a past run backfills it.
+    # Scope the job's temporary external table definition to the exact object
+    # this run uploaded so each run only reprocesses its own interval;
+    # clearing a past run backfills it. The definition lives inside the job,
+    # so concurrent grain chains never share raw table state.
     config["raw_gcs_uri"] = f"gs://{raw_location['bucket']}/{raw_location['object']}"
-    if step_name == "raw_data_samples":
+    if step_name == "validate_raw_data":
         config["expected_raw_row_count"] = raw_location.get("document_count")
 
     transform_config = _bigquery_transform_config(config)
@@ -297,11 +325,7 @@ def _build_dag(category, schedule):
         tags=["mongo", "gcs", "bigquery", category],
     ) as dag:
         @task()
-        def get_grain_targets() -> list[dict]:
-            return load_grain_targets(category)
-
-        @task()
-        def extract_raw_data_to_gcs(target: dict):
+        def extract_raw_data_to_gcs() -> list[dict]:
             context = get_current_context()
             # Stick to the date only: resolve the run to its zulu calendar date
             # and extract that full utc day. The logical date is authoritative
@@ -323,18 +347,18 @@ def _build_dag(category, schedule):
                     f"resolved to zulu date {start_date.date()}"
                 )
             return _extract_raw_data_to_gcs(
-                target,
+                load_grain_targets(category),
                 start_date,
                 end_date,
                 category,
             )
 
-        @task(task_id="raw_data_samples")
-        def create_raw_data_samples(raw_location):
+        @task(task_id="validate_raw_data")
+        def validate_raw_data(raw_location):
             return _run_bigquery_step(
                 raw_location,
-                "raw_data_samples",
-                run_create_raw_data_samples,
+                "validate_raw_data",
+                run_validate_raw_data,
             )
 
         @task(task_id="dim_grains")
@@ -361,20 +385,19 @@ def _build_dag(category, schedule):
                 run_merge_fact_values,
             )
 
-        # The per grain chain must expand as one mapped task group: trigger
-        # rules only narrow a skipped upstream to the matching map index when
-        # both tasks share a mapped task group, so without it one empty grain
-        # would skip the transform and load tasks for every grain.
+        # Each grain's transform chain expands as one mapped task group so
+        # the per grain raw location rides one chain end to end. Quiet
+        # grains never reach here: the batch extract returns no raw
+        # location for them, so their chains simply do not expand.
         @task_group()
-        def ingest_grain(target: dict):
-            raw_location = extract_raw_data_to_gcs(target)
-            raw_table = create_raw_data_samples(raw_location)
-            grains = merge_dim_grains(raw_table)
+        def transform_grain(raw_location: dict):
+            raw_checked = validate_raw_data(raw_location)
+            grains = merge_dim_grains(raw_checked)
             metrics = merge_dim_metrics(grains)
             merge_fact_values(metrics)
 
-        grain_targets = get_grain_targets()
-        ingest_grain.expand(target=grain_targets)
+        raw_locations = extract_raw_data_to_gcs()
+        transform_grain.expand(raw_location=raw_locations)
 
     return dag
 

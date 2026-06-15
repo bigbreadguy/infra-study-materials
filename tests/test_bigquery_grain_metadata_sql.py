@@ -33,7 +33,7 @@ class _FakeBigQueryClient:
     def __init__(self):
         self.queries = []
 
-    def query(self, sql, location=None):
+    def query(self, sql, location=None, job_config=None):
         self.queries.append((sql, location))
         return _FakeQueryJob()
 

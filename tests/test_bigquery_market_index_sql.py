@@ -15,7 +15,8 @@ from common.bigquery_market_index_sql import (
     dim_grains_merge_sql,
     dim_metrics_merge_sql,
     fact_values_merge_sql,
-    raw_data_samples_sql,
+    raw_data_samples_check_sql,
+    raw_external_table_definition,
 )
 
 
@@ -25,72 +26,65 @@ RAW_GCS_URI = "gs://example-raw-bucket/bloomberg/raw/*"
 
 
 class BigQueryMarketIndexSqlTest(TestCase):
-    def test_raw_external_table_sql_includes_json_columns_and_raw_uri(self):
-        sql = raw_data_samples_sql(
-            project_id=PROJECT_ID,
-            dataset_id=DATASET_ID,
-            raw_gcs_uri=RAW_GCS_URI,
-        )
+    def test_raw_external_table_definition_keeps_json_columns_and_uri(self):
+        definition = raw_external_table_definition(RAW_GCS_URI)
 
-        self.assertIn(
-            "`example-study-proj.dl_bloomberg_data.raw_data_samples`",
-            sql,
-        )
-        self.assertIn("_id JSON", sql)
-        self.assertIn("datasetId JSON", sql)
-        self.assertIn("ts JSON", sql)
-        self.assertIn("data JSON", sql)
-        self.assertIn(f"uris = ['{RAW_GCS_URI}']", sql)
-
-    def test_raw_external_table_sql_appends_row_count_assertion(self):
-        sql = raw_data_samples_sql(
-            project_id=PROJECT_ID,
-            dataset_id=DATASET_ID,
-            raw_gcs_uri=RAW_GCS_URI,
-            expected_row_count=3,
-        )
-
-        self.assertIn("CREATE OR REPLACE EXTERNAL TABLE", sql)
-        self.assertIn(") = 3 AS 'Raw external table row count must match", sql)
+        self.assertEqual(definition["sourceFormat"], "NEWLINE_DELIMITED_JSON")
+        self.assertTrue(definition["ignoreUnknownValues"])
+        self.assertEqual(definition["sourceUris"], [RAW_GCS_URI])
+        # Mongo exports use Extended JSON for ObjectId and Date fields, which
+        # must stay JSON at the external-table boundary.
+        fields = {
+            field["name"]: field["type"]
+            for field in definition["schema"]["fields"]
+        }
+        self.assertEqual(len(fields), 9)
+        self.assertEqual(fields["_id"], "JSON")
+        self.assertEqual(fields["datasetId"], "JSON")
+        self.assertEqual(fields["ts"], "JSON")
+        self.assertEqual(fields["data"], "JSON")
+        self.assertEqual(fields["grainId"], "STRING")
 
         with self.assertRaises(ValueError):
-            raw_data_samples_sql(
-                project_id=PROJECT_ID,
-                dataset_id=DATASET_ID,
-                raw_gcs_uri=RAW_GCS_URI,
-                expected_row_count=-1,
-            )
+            raw_external_table_definition("s3://example-raw-bucket/raw/*")
+        with self.assertRaises(ValueError):
+            raw_external_table_definition("")
 
-    def test_sql_builders_accept_custom_raw_table_id(self):
-        raw_table_id = "raw_data_samples_SX5E_Index"
-        qualified = (
-            "`example-study-proj.dl_bloomberg_data.raw_data_samples_SX5E_Index`"
-        )
+    def test_raw_check_sql_asserts_extracted_row_count(self):
+        sql = raw_data_samples_check_sql(expected_row_count=3)
 
-        raw_sql = raw_data_samples_sql(
-            project_id=PROJECT_ID,
-            dataset_id=DATASET_ID,
-            raw_gcs_uri=RAW_GCS_URI,
-            raw_table_id=raw_table_id,
-        )
+        self.assertIn("FROM raw_data_samples", sql)
+        self.assertIn(") = 3 AS 'Raw external table row count must match", sql)
+
+        count_sql = raw_data_samples_check_sql()
+        self.assertIn("SELECT COUNT(*) AS row_count", count_sql)
+        self.assertNotIn("ASSERT", count_sql)
+
+        with self.assertRaises(ValueError):
+            raw_data_samples_check_sql(expected_row_count=-1)
+
+    def test_sql_builders_read_raw_through_bare_temp_table_name(self):
         grain_sql = dim_grains_merge_sql(
             project_id=PROJECT_ID,
             dataset_id=DATASET_ID,
-            raw_table_id=raw_table_id,
         )
         metric_sql = dim_metrics_merge_sql(
             project_id=PROJECT_ID,
             dataset_id=DATASET_ID,
-            raw_table_id=raw_table_id,
         )
         fact_sql = fact_values_merge_sql(
             project_id=PROJECT_ID,
             dataset_id=DATASET_ID,
-            raw_table_id=raw_table_id,
         )
 
-        for sql in (raw_sql, grain_sql, metric_sql, fact_sql):
-            self.assertIn(qualified, sql)
+        # The raw name must stay bare so each job resolves it through its
+        # temporary external table definition; only dim and fact tables are
+        # persistent and qualified.
+        self.assertIn("FROM raw_data_samples\n", grain_sql)
+        self.assertIn("FROM raw_data_samples AS raw", metric_sql)
+        self.assertIn("FROM raw_data_samples AS raw", fact_sql)
+        for sql in (grain_sql, metric_sql, fact_sql):
+            self.assertNotIn(f"{DATASET_ID}.raw_data_samples", sql)
 
     def test_dimension_merge_sql_preserves_merge_keys(self):
         grain_sql = dim_grains_merge_sql(
@@ -267,7 +261,16 @@ class BigQueryMarketIndexSqlTest(TestCase):
             "target dedup must run before the merge",
         )
 
-    def test_runner_executes_script_with_configured_region(self):
+    def test_runner_attaches_temp_raw_definition_to_each_job(self):
+        try:
+            # pyrefly: ignore [missing-import]
+            from google.cloud import bigquery  # noqa: F401
+        except ModuleNotFoundError:
+            self.skipTest(
+                "google-cloud-bigquery is not installed in the local test "
+                "environment"
+            )
+
         config = BigQueryTransformConfig(
             project_id=PROJECT_ID,
             dataset_id=DATASET_ID,
@@ -282,10 +285,19 @@ class BigQueryMarketIndexSqlTest(TestCase):
             result,
             {"job_id": "job-example-001", "location": "asia-northeast3"},
         )
-        self.assertEqual(client.queries[0]["location"], "asia-northeast3")
+        query = client.queries[0]
+        self.assertEqual(query["location"], "asia-northeast3")
         self.assertIn(
             "MERGE `example-study-proj.dl_bloomberg_data.dim_grains`",
-            client.queries[0]["sql"],
+            query["sql"],
+        )
+        # Every job must carry its own temporary raw table definition scoped
+        # to the run's GCS object; no persistent raw table exists.
+        definitions = query["job_config"].table_definitions
+        self.assertEqual(list(definitions), ["raw_data_samples"])
+        self.assertEqual(
+            definitions["raw_data_samples"].source_uris,
+            [RAW_GCS_URI],
         )
 
 
@@ -301,6 +313,8 @@ class FakeBigQueryClient:
     def __init__(self):
         self.queries = []
 
-    def query(self, sql, *, location):
-        self.queries.append({"sql": sql, "location": location})
+    def query(self, sql, *, location, job_config=None):
+        self.queries.append(
+            {"sql": sql, "location": location, "job_config": job_config}
+        )
         return FakeBigQueryJob()

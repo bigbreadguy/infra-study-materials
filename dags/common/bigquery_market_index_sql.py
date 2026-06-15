@@ -13,15 +13,14 @@ FACT_VALUES_TABLE = "fact_values"
 class MarketIndexTables:
     project_id: str
     dataset_id: str
-    raw_table_id: str = RAW_DATA_SAMPLES_TABLE
 
     @property
     def raw_data_samples(self) -> str:
-        return qualified_table(
-            self.project_id,
-            self.dataset_id,
-            self.raw_table_id,
-        )
+        # Bare name: each query job resolves it through a temporary external
+        # table definition keyed by RAW_DATA_SAMPLES_TABLE, so no persistent
+        # raw table exists and concurrent grain chains cannot clobber each
+        # other's URI pointer.
+        return RAW_DATA_SAMPLES_TABLE
 
     @property
     def dim_grains(self) -> str:
@@ -67,51 +66,54 @@ def _sql_string(value: str, label: str) -> str:
     return f"'{value}'"
 
 
-def raw_data_samples_sql(
-    *,
-    project_id: str,
-    dataset_id: str,
-    raw_gcs_uri: str,
-    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
-    expected_row_count: int | None = None,
-) -> str:
-    tables = MarketIndexTables(
-        project_id=project_id,
-        dataset_id=dataset_id,
-        raw_table_id=raw_table_id,
-    )
-    raw_uri = _sql_string(raw_gcs_uri, "raw_gcs_uri")
+def raw_external_table_definition(raw_gcs_uri: str) -> dict:
+    """ExternalConfig API representation for one run's raw NDJSON object.
 
-    sql = f"""-- Mongo exports use Extended JSON for ObjectId and Date fields. Keep those
--- fields as JSON at the external-table boundary and normalize them downstream.
-CREATE OR REPLACE EXTERNAL TABLE {tables.raw_data_samples} (
-  _id JSON,
-  datasetId JSON,
-  ts JSON,
-  grainId STRING,
-  _schema STRING,
-  description STRING,
-  createdAt JSON,
-  data JSON,
-  updatedAt JSON
-)
-OPTIONS (
-  format = 'NEWLINE_DELIMITED_JSON',
-  ignore_unknown_values = true,
-  uris = [{raw_uri}]
-);"""
+    Attached to each query job as a temporary table definition keyed by
+    RAW_DATA_SAMPLES_TABLE; the job-scoped definition replaces the persistent
+    per-grain external tables that used to clutter the dataset.
+    """
+    if not raw_gcs_uri:
+        raise ValueError("raw_gcs_uri must be a non-empty string")
+    if not raw_gcs_uri.startswith("gs://"):
+        raise ValueError("raw_gcs_uri must be a gs:// URI")
 
+    # Mongo exports use Extended JSON for ObjectId and Date fields. Keep those
+    # fields as JSON at the external-table boundary and normalize them
+    # downstream.
+    return {
+        "sourceFormat": "NEWLINE_DELIMITED_JSON",
+        "ignoreUnknownValues": True,
+        "sourceUris": [raw_gcs_uri],
+        "schema": {
+            "fields": [
+                {"name": "_id", "type": "JSON"},
+                {"name": "datasetId", "type": "JSON"},
+                {"name": "ts", "type": "JSON"},
+                {"name": "grainId", "type": "STRING"},
+                {"name": "_schema", "type": "STRING"},
+                {"name": "description", "type": "STRING"},
+                {"name": "createdAt", "type": "JSON"},
+                {"name": "data", "type": "JSON"},
+                {"name": "updatedAt", "type": "JSON"},
+            ]
+        },
+    }
+
+
+def raw_data_samples_check_sql(*, expected_row_count: int | None = None) -> str:
     if expected_row_count is None:
-        return sql
+        # Without an expected count the read still proves the run's object is
+        # present and parseable through the temporary table definition.
+        return f"""SELECT COUNT(*) AS row_count
+FROM {RAW_DATA_SAMPLES_TABLE};"""
 
     if not isinstance(expected_row_count, int) or expected_row_count < 0:
         raise ValueError("expected_row_count must be a non-negative integer")
 
-    return f"""{sql}
-
-ASSERT (
+    return f"""ASSERT (
   SELECT COUNT(*)
-  FROM {tables.raw_data_samples}
+  FROM {RAW_DATA_SAMPLES_TABLE}
 ) = {expected_row_count} AS 'Raw external table row count must match the extracted document count.';"""
 
 
@@ -119,13 +121,11 @@ def dim_grains_merge_sql(
     *,
     project_id: str,
     dataset_id: str,
-    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
     grain_description: str | None = None,
 ) -> str:
     tables = MarketIndexTables(
         project_id=project_id,
         dataset_id=dataset_id,
-        raw_table_id=raw_table_id,
     )
 
     # The curated description from the grain targets variable wins over
@@ -188,12 +188,10 @@ def dim_metrics_merge_sql(
     *,
     project_id: str,
     dataset_id: str,
-    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
 ) -> str:
     tables = MarketIndexTables(
         project_id=project_id,
         dataset_id=dataset_id,
-        raw_table_id=raw_table_id,
     )
 
     return f"""MERGE {tables.dim_metrics} AS target
@@ -298,13 +296,11 @@ def fact_values_merge_sql(
     *,
     project_id: str,
     dataset_id: str,
-    raw_table_id: str = RAW_DATA_SAMPLES_TABLE,
     time_grain: str = "D",
 ) -> str:
     tables = MarketIndexTables(
         project_id=project_id,
         dataset_id=dataset_id,
-        raw_table_id=raw_table_id,
     )
     time_grain_literal = _sql_string(time_grain, "time_grain")
 
