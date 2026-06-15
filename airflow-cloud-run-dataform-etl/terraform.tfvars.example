@@ -76,19 +76,20 @@ extra_labels = {
 # bigquery_transform_service_account_display_name = "Airflow BigQuery transformer"
 # raw_object_prefix                               = "bloomberg/raw"
 
-# Scraper Cloud Run Job (Phase 4). Defaults create:
-#   - a "scrape" GCS bucket (added to var.buckets)
-#   - an Artifact Registry docker repo "scraper"
-#   - a generic "scraper" Cloud Run Job + its sa-scraper-job identity
+# Scraper Cloud Run Job (Phase 4). Resource names follow deepfl-infra conventions.
+# Defaults create:
+#   - the dfml-dev-raw GCS bucket (raw data lake; scrape/requests + scrape/results)
+#   - a shared Artifact Registry docker repo "dev-dfml-docker"
+#   - a generic "scraper" Cloud Run Job + its scraper-sa identity
 #   - empty secrets scrape-kosa-user / scrape-kosa-password (values added out of band)
 # Add a target by appending to scraper_targets; no job/IAM change is needed because
 # the job SA's secretAccessor is scoped to the scrape- prefix via an IAM Condition.
-# scraper_artifact_repository_id = "scraper"
-# scraper_image_name             = "dfml-scraper"
+# scraper_artifact_repository_id = "dev-dfml-docker"
+# scraper_image_name             = "scraper"
 # scraper_image_tag              = "latest"
 # scraper_job_name               = "scraper"
-# scraper_service_account_id     = "sa-scraper-job"
-# scraper_scrape_bucket_key      = "scrape"
+# scraper_service_account_id     = "scraper-sa"
+# scraper_raw_bucket_name        = null   # null => dfml-<environment>-raw
 # scraper_secret_name_prefix     = "scrape-"
 # scraper_targets                = ["kosa"]
 # scraper_job_cpu                = "2"

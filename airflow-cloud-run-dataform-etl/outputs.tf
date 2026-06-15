@@ -118,10 +118,10 @@ output "bigquery_transform_load" {
 ###############################################################################
 
 output "scraper_artifact_repository" {
-  description = "Artifact Registry Docker repo for the scraper image."
+  description = "Shared Artifact Registry Docker repo hosting the scraper image."
   value = {
-    id       = google_artifact_registry_repository.scraper.repository_id
-    location = google_artifact_registry_repository.scraper.location
+    id       = google_artifact_registry_repository.docker.repository_id
+    location = google_artifact_registry_repository.docker.location
   }
 }
 
@@ -141,12 +141,12 @@ output "scraper_job" {
 
 output "scraper_service_account_email" {
   description = "Runtime identity of the scraper Cloud Run Job."
-  value       = google_service_account.scraper_job.email
+  value       = google_service_account.scraper_sa.email
 }
 
 output "scraper_scrape_bucket_name" {
-  description = "Bucket holding scrape/requests and scrape/results objects."
-  value       = local.scrape_bucket_name
+  description = "Bucket holding scrape/requests and scrape/results objects (dfml-<env>-raw)."
+  value       = google_storage_bucket.scrape_raw.name
 }
 
 output "scraper_secret_ids" {
@@ -161,7 +161,7 @@ output "scraper_airflow_variables" {
     cloud_run_job_name             = google_cloud_run_v2_job.scraper.name
     cloud_run_region               = google_cloud_run_v2_job.scraper.location
     gcp_project_id                 = var.project_id
-    scrape_bucket_name             = local.scrape_bucket_name
+    scrape_bucket_name             = google_storage_bucket.scrape_raw.name
   }
 }
 

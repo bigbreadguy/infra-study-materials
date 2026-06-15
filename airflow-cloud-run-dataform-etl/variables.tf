@@ -138,16 +138,6 @@ variable "buckets" {
       versioning_enabled = false
       retention_days     = 7
     }
-
-    # Scraper control plane: Cloud Run Job request + result objects
-    # (scrape/requests/, scrape/results/). One whole-bucket TTL covers both
-    # prefixes; downstream loads results to BigQuery before they expire. In prod
-    # you might split per-prefix lifecycle rules — here one age rule keeps it simple.
-    scrape = {
-      name_suffix        = "scrape"
-      versioning_enabled = false
-      retention_days     = 30
-    }
   }
 
   validation {
@@ -401,9 +391,9 @@ variable "raw_object_prefix" {
 ###############################################################################
 
 variable "scraper_artifact_repository_id" {
-  description = "Artifact Registry Docker repository id that hosts the scraper image."
+  description = "Shared Artifact Registry Docker repository id (deepfl-infra convention: <env>-dfml-docker). Hosts the scraper image alongside other dfml images."
   type        = string
-  default     = "scraper"
+  default     = "dev-dfml-docker"
 
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{0,62}$", var.scraper_artifact_repository_id))
@@ -412,9 +402,9 @@ variable "scraper_artifact_repository_id" {
 }
 
 variable "scraper_image_name" {
-  description = "Image name (without registry/repo prefix) for the scraper container."
+  description = "Image name (within the docker repo) for the scraper container. Bare domain name, matching deepfl-infra image naming (ingest, orch, ...)."
   type        = string
-  default     = "dfml-scraper"
+  default     = "scraper"
 
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{0,62}$", var.scraper_image_name))
@@ -445,9 +435,9 @@ variable "scraper_job_name" {
 }
 
 variable "scraper_service_account_id" {
-  description = "Service account id the scraper Cloud Run Job runs as."
+  description = "Service account id the scraper Cloud Run Job runs as (deepfl-infra convention: <domain>-sa)."
   type        = string
-  default     = "sa-scraper-job"
+  default     = "scraper-sa"
 
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", var.scraper_service_account_id))
@@ -455,14 +445,14 @@ variable "scraper_service_account_id" {
   }
 }
 
-variable "scraper_scrape_bucket_key" {
-  description = "Logical key in var.buckets the scraper reads requests from and writes results to."
+variable "scraper_raw_bucket_name" {
+  description = "GCS bucket the scraper reads requests from and writes results to, under scrape/ prefixes. Defaults to the deepfl-infra raw data lake name dfml-<environment>-raw."
   type        = string
-  default     = "scrape"
+  default     = null
 
   validation {
-    condition     = can(regex("^[a-z][a-z0-9_]{0,30}$", var.scraper_scrape_bucket_key))
-    error_message = "scraper_scrape_bucket_key must use the same lower-case logical key format as var.buckets."
+    condition     = var.scraper_raw_bucket_name == null || can(regex("^[a-z0-9][a-z0-9_.-]{1,61}[a-z0-9]$", var.scraper_raw_bucket_name))
+    error_message = "scraper_raw_bucket_name must be a valid GCS bucket name."
   }
 }
 
