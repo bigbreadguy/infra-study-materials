@@ -81,10 +81,19 @@ def _dag_conf() -> dict[str, Any]:
 
 
 def _run_point_kst():
+    # Airflow 3: a manual run on a schedule=None DAG has logical_date=None and no data
+    # interval. Fall back through the run's timestamp, then to now, instead of failing.
+    import pendulum
+
     context = get_current_context()
-    run_point = context.get("logical_date") or context.get("data_interval_start")
-    if run_point is None:
-        raise RuntimeError("No logical_date / data_interval_start in context")
+    dag_run = context.get("dag_run")
+    run_point = (
+        context.get("logical_date")
+        or context.get("data_interval_start")
+        or getattr(dag_run, "run_after", None)
+        or getattr(dag_run, "logical_date", None)
+        or pendulum.now("UTC")
+    )
     # context datetimes are pendulum-aware; normalize to KST before deriving month.
     return run_point.in_timezone("Asia/Seoul")
 
@@ -93,11 +102,17 @@ def _build_params() -> dict[str, Any]:
     conf = _dag_conf()
     params = merge_params(DEFAULT_QUERY, {k: conf[k] for k in QUERY_KEYS if k in conf})
 
-    lookback = int(conf.get("lookback_months", DEFAULT_LOOKBACK_MONTHS))
-    run_point = _run_point_kst()
-    year, month = resolve_year_month(run_point.year, run_point.month, lookback)
-    params["year"] = int(conf.get("year", year))
-    params["month"] = int(conf.get("month", month))
+    # Prefer explicit conf year/month; only derive from the run date when missing, so a
+    # manual run with {"year": ..., "month": ...} never depends on logical_date.
+    if "year" in conf and "month" in conf:
+        params["year"] = int(conf["year"])
+        params["month"] = int(conf["month"])
+    else:
+        lookback = int(conf.get("lookback_months", DEFAULT_LOOKBACK_MONTHS))
+        run_point = _run_point_kst()
+        year, month = resolve_year_month(run_point.year, run_point.month, lookback)
+        params["year"] = int(conf.get("year", year))
+        params["month"] = int(conf.get("month", month))
     return params
 
 
