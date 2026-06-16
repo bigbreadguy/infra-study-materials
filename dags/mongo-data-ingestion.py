@@ -56,7 +56,11 @@ from common.grain_targets import (
 
 # Categories default to manual trigger; map a category name to a schedule
 # here once it is verified, e.g. {"nickel": "@daily"}.
-SCHEDULE_OVERRIDES: dict[str, str | None] = {}
+SCHEDULE_OVERRIDES: dict[str, str | None] = {
+    "copper": "@daily",
+    "market_macro": "@daily",
+    "nickel": "@daily"
+}
 
 # The @daily schedule fires at 00:00Z, the start of the logical date's
 # own day, before the source has published it. Extract the previous
