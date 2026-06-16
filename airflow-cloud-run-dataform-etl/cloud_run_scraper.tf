@@ -171,13 +171,23 @@ resource "google_cloud_run_v2_job" "scraper" {
 # Airflow caller grants (the orchestrator SA triggers the job + writes requests)
 ###############################################################################
 
-# Run the job and read its executions. Scoped to this job (not project-wide).
+# Execute the job. Scoped tight to this job (grants run.jobs.run on the job only).
 resource "google_cloud_run_v2_job_iam_member" "airflow_run_developer" {
   project  = var.project_id
   location = google_cloud_run_v2_job.scraper.location
   name     = google_cloud_run_v2_job.scraper.name
   role     = "roles/run.developer"
   member   = "serviceAccount:${google_service_account.airflow_orchestrator.email}"
+}
+
+# CloudRunExecuteJobOperator polls the long-running operation + execution after
+# starting the job, which needs run.operations.get / run.executions.get on the
+# project/location-level operation resource (NOT covered by the job-scoped grant
+# above). roles/run.viewer is the minimal read-only role that provides it.
+resource "google_project_iam_member" "airflow_run_viewer" {
+  project = var.project_id
+  role    = "roles/run.viewer"
+  member  = "serviceAccount:${google_service_account.airflow_orchestrator.email}"
 }
 
 # Act as the scraper job SA in order to run the job as that identity.
