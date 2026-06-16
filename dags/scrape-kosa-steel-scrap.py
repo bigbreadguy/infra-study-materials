@@ -81,8 +81,9 @@ def _dag_conf() -> dict[str, Any]:
 
 
 def _run_point_kst():
-    # Airflow 3: a manual run on a schedule=None DAG has logical_date=None and no data
-    # interval. Fall back through the run's timestamp, then to now, instead of failing.
+    # Airflow 3: a manually-triggered run can have logical_date=None and no data
+    # interval (scheduled @monthly runs do carry one). Fall back through the run's
+    # timestamp, then to now, instead of failing.
     import pendulum
 
     context = get_current_context()
@@ -118,8 +119,12 @@ def _build_params() -> dict[str, Any]:
 
 with DAG(
     dag_id="scrape-kosa-steel-scrap",
-    start_date=datetime(2026, 1, 1),
-    schedule=None,
+    # The KOSA steel-scrap series starts 2001-01 and is month-grained. start_date marks
+    # the earliest schedulable month; catchup=False keeps the scheduler from auto-firing
+    # the ~294 historical months on unpause -- the historical backfill is a deliberate,
+    # separate run (set catchup=True or `airflow dags backfill` when ready).
+    start_date=datetime(2001, 1, 1),
+    schedule="@monthly",
     catchup=False,
     max_active_runs=1,
     default_args={
@@ -162,35 +167,41 @@ with DAG(
             "output_uri": gcs_uri(config["bucket"], result_object),
         }
 
-    @task()
-    def trigger_scraper_job(uris: dict[str, str]) -> dict[str, Any]:
-        config = _config()
+    request_uris = build_and_write_request()
 
-        # Per-execution env overrides; the job spec keeps only static GCP_PROJECT.
-        overrides = {
+    # Real CloudRunExecuteJobOperator task (WI5 quick win). This was previously a
+    # @task that called operator.execute(get_current_context()) by hand, which Airflow
+    # 3 warns against ("execute cannot be called outside the Task Runner"): manual
+    # execute() bypasses the Task Runner's render-templates / pre_execute lifecycle.
+    #
+    # All operator config args and `overrides` are template fields, so:
+    #   - config is pulled from Airflow Variables at run time via Jinja, not via a
+    #     top-level Variable.get that would hit the DB on every dag-processor parse;
+    #   - the REQUEST_URI / OUTPUT_URI XComArgs resolve at run time and auto-wire the
+    #     upstream dependency on build_and_write_request.
+    # The operator is synchronous (deferrable defaults to False): a non-zero job exit
+    # raises and fails the task -- the single gate, no result-existence sensor.
+    # impersonation_chain renders to "" when the Variable is unset; the Google base
+    # hook treats a falsy chain as no impersonation (auth as the connection's own SA),
+    # matching the original _optional_variable -> None behavior.
+    execute_scraper_job = CloudRunExecuteJobOperator(
+        task_id="execute_scraper_job",
+        project_id="{{ var.value.scraper_gcp_project_id }}",
+        region="{{ var.value.scraper_cloud_run_region }}",
+        job_name="{{ var.value.scraper_cloud_run_job_name }}",
+        overrides={
             "container_overrides": [
                 {
                     "env": [
-                        {"name": "REQUEST_URI", "value": uris["request_uri"]},
-                        {"name": "OUTPUT_URI", "value": uris["output_uri"]},
+                        {"name": "REQUEST_URI", "value": request_uris["request_uri"]},
+                        {"name": "OUTPUT_URI", "value": request_uris["output_uri"]},
                     ],
                 }
             ],
             "task_count": 1,
-        }
+        },
+        gcp_conn_id="{{ var.value.scraper_gcp_conn_id }}",
+        impersonation_chain="{{ var.value.get('scraper_impersonation_chain', '') }}",
+    )
 
-        operator = CloudRunExecuteJobOperator(
-            task_id="execute_scraper_job",
-            project_id=config["project_id"],
-            region=config["region"],
-            job_name=config["job_name"],
-            overrides=overrides,
-            gcp_conn_id=config["gcp_conn_id"],
-            impersonation_chain=config["impersonation_chain"],
-        )
-        # Synchronous execute: raises if the job exits non-zero -> task fails.
-        # This is the single gate (no GCSObjectExistenceSensor).
-        operator.execute(get_current_context())
-        return {"output_uri": uris["output_uri"]}
-
-    trigger_scraper_job(build_and_write_request())
+    request_uris >> execute_scraper_job
