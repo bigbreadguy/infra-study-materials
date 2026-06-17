@@ -176,6 +176,7 @@ with DAG(
         result_object = result_object_name(run_id)
 
         gcs_hook = GCSHook(
+            # pyrefly: ignore [bad-argument-type]
             gcp_conn_id=config["gcp_conn_id"],
             impersonation_chain=config["impersonation_chain"],
         )
@@ -184,6 +185,7 @@ with DAG(
 
         upload_replacing_object(
             gcs_hook,
+            # pyrefly: ignore [bad-argument-type]
             bucket_name=config["bucket"],
             object_name=request_object,
             data=json.dumps(request, ensure_ascii=False),
@@ -191,7 +193,9 @@ with DAG(
         )
 
         return {
+            # pyrefly: ignore [bad-argument-type]
             "request_uri": gcs_uri(config["bucket"], request_object),
+            # pyrefly: ignore [bad-argument-type]
             "output_uri": gcs_uri(config["bucket"], result_object),
         }
 
@@ -221,7 +225,9 @@ with DAG(
             "container_overrides": [
                 {
                     "env": [
+                        # pyrefly: ignore [bad-index]
                         {"name": "REQUEST_URI", "value": request_uris["request_uri"]},
+                        # pyrefly: ignore [bad-index]
                         {"name": "OUTPUT_URI", "value": request_uris["output_uri"]},
                     ],
                 }
