@@ -1,4 +1,4 @@
-"""Trigger the generic scraper Cloud Run Job for the kosa.steel_scrap recipe.
+"""Trigger the generic scraper Cloud Run Job for the kosa.steel_scrap_import recipe.
 
 Flow (PRD section 5): render a {schema_version, recipe, params} request -> write it
 to GCS -> execute the Cloud Run Job with REQUEST_URI / OUTPUT_URI as per-execution
@@ -36,9 +36,9 @@ from common.scrape_request import (
 )
 
 
-RECIPE = "kosa.steel_scrap"
+RECIPE = "kosa.steel_scrap_import"
 
-# Default query for kosa.steel_scrap. country/item are the names typed into the
+# Default query for kosa.steel_scrap_import. country/item are the names typed into the
 # filters; *_code are the per-request grid-row keys (PRD 6.1). Override any of these
 # (and year/month/lookback_months) via dag_run.conf.
 DEFAULT_QUERY = {
