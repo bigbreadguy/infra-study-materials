@@ -7,7 +7,9 @@ result-existence sensor). Loading results GCS -> BigQuery is a separate workload
 
 Config comes from Airflow Variables (populate from the Terraform output
 `scraper_airflow_variables`). Query params come from defaults below, overridable per
-run via dag_run.conf; year/month derive from the run's logical date (KST + lookback).
+run via dag_run.conf. The recipe takes a start..end month range and returns one record
+per month: a scheduled run derives a single month from its logical date (KST +
+lookback, start == end); pass an explicit range via conf to bulk-backfill a span.
 """
 
 from __future__ import annotations
@@ -39,8 +41,10 @@ from common.scrape_request import (
 RECIPE = "kosa.steel_scrap_import"
 
 # Default query for kosa.steel_scrap_import. country/item are the names typed into the
-# filters; *_code are the per-request grid-row keys (PRD 6.1). Override any of these
-# (and year/month/lookback_months) via dag_run.conf.
+# filters; *_code are the per-request grid-row keys (PRD 6.1). Override any of these via
+# dag_run.conf. The date span is a start..end month range (see _resolve_period): a
+# scheduled run derives a single month (start == end); pass {start_year, start_month,
+# end_year, end_month} to bulk-backfill a span, or {year, month} for one month.
 DEFAULT_QUERY = {
     "country": "일본",
     "country_code": "104",
@@ -99,21 +103,45 @@ def _run_point_kst():
     return run_point.in_timezone("Asia/Seoul")
 
 
-def _build_params() -> dict[str, Any]:
-    conf = _dag_conf()
-    params = merge_params(DEFAULT_QUERY, {k: conf[k] for k in QUERY_KEYS if k in conf})
+def _resolve_period(conf: dict[str, Any]) -> tuple[int, int, int, int]:
+    """Return (start_year, start_month, end_year, end_month) for the request.
 
-    # Prefer explicit conf year/month; only derive from the run date when missing, so a
-    # manual run with {"year": ..., "month": ...} never depends on logical_date.
+    The kosa recipes take a start..end month range and return one record per month
+    (bulk backfill). Precedence:
+
+    1. **Explicit range** ``{"start_year","start_month",[ "end_year","end_month" ]}``
+       in conf -> used as-is (end defaults to start). This is the bulk-backfill path;
+       e.g. one run with 2001-01..now replaces ~294 single-month runs.
+    2. **Single month** ``{"year","month"}`` in conf -> ``start == end``.
+    3. **Derived** from the run's date (KST) minus ``lookback_months`` -> ``start ==
+       end``; the per-month behavior of the @monthly schedule.
+    """
+
+    if "start_year" in conf and "start_month" in conf:
+        start_year = int(conf["start_year"])
+        start_month = int(conf["start_month"])
+        end_year = int(conf.get("end_year", start_year))
+        end_month = int(conf.get("end_month", start_month))
+        return start_year, start_month, end_year, end_month
+
     if "year" in conf and "month" in conf:
-        params["year"] = int(conf["year"])
-        params["month"] = int(conf["month"])
+        year, month = int(conf["year"]), int(conf["month"])
     else:
         lookback = int(conf.get("lookback_months", DEFAULT_LOOKBACK_MONTHS))
         run_point = _run_point_kst()
         year, month = resolve_year_month(run_point.year, run_point.month, lookback)
-        params["year"] = int(conf.get("year", year))
-        params["month"] = int(conf.get("month", month))
+    return year, month, year, month
+
+
+def _build_params() -> dict[str, Any]:
+    conf = _dag_conf()
+    params = merge_params(DEFAULT_QUERY, {k: conf[k] for k in QUERY_KEYS if k in conf})
+
+    start_year, start_month, end_year, end_month = _resolve_period(conf)
+    params["start_year"] = start_year
+    params["start_month"] = start_month
+    params["end_year"] = end_year
+    params["end_month"] = end_month
     return params
 
 
