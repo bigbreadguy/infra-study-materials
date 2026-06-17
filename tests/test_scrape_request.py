@@ -67,16 +67,24 @@ class BuildRequestPayloadTests(TestCase):
 
 
 class ObjectPathTests(TestCase):
-    def test_paths_keyed_by_run_id(self):
+    def test_paths_keyed_by_run_id_and_recipe(self):
         self.assertEqual(
-            request_object_name("run-1"), "scrape/requests/run-1.json"
+            request_object_name("run-1", "kosa.steel_scrap_import"),
+            "scrape/requests/run-1/kosa.steel_scrap_import.json",
         )
         self.assertEqual(
-            result_object_name("run-1"), "scrape/results/run-1.json"
+            result_object_name("run-1", "kosa.steel_scrap_import"),
+            "scrape/results/run-1/kosa.steel_scrap_import.json",
         )
+
+    def test_recipes_of_one_run_do_not_collide(self):
+        run_id = "run-1"
+        a = request_object_name(run_id, "kosa.steel_scrap_import")
+        b = request_object_name(run_id, "kosa.steel_scrap_domestic")
+        self.assertNotEqual(a, b)
 
     def test_gcs_uri(self):
         self.assertEqual(
-            gcs_uri("dfml-dev-raw", "scrape/requests/run-1.json"),
-            "gs://dfml-dev-raw/scrape/requests/run-1.json",
+            gcs_uri("dfml-dev-raw", "scrape/requests/run-1/kosa.steel_scrap_import.json"),
+            "gs://dfml-dev-raw/scrape/requests/run-1/kosa.steel_scrap_import.json",
         )

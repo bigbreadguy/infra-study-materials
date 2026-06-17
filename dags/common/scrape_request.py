@@ -58,12 +58,14 @@ def build_request_payload(recipe: str, params: Mapping[str, Any]) -> dict[str, A
     }
 
 
-def request_object_name(run_id: str) -> str:
-    return f"scrape/requests/{run_id}.json"
+def request_object_name(run_id: str, recipe: str) -> str:
+    # One DAG run fans out across several recipes, so the object is keyed by both the
+    # run_id and the recipe to avoid collisions between recipes of the same run.
+    return f"scrape/requests/{run_id}/{recipe}.json"
 
 
-def result_object_name(run_id: str) -> str:
-    return f"scrape/results/{run_id}.json"
+def result_object_name(run_id: str, recipe: str) -> str:
+    return f"scrape/results/{run_id}/{recipe}.json"
 
 
 def gcs_uri(bucket: str, object_name: str) -> str:

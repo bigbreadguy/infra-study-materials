@@ -56,6 +56,66 @@ Example placeholder shape:
 
 Do not commit real target URLs, selectors, headers, cookies, credentials, response payloads, or private action plans. Use Airflow Variables, Airflow Connections, a secrets backend, or ignored local files for those values.
 
+## External Data Scraper DAG
+
+The `scrape-external-data` DAG triggers the generic scraper Cloud Run Job once per
+recipe and gates each task on the job's exit code (no result-existence sensor).
+It scrapes every recipe registered in the top-level `SOURCES` map in
+`dags/scrape-external-data.py`, grouped by source. A source is the scraper engine's
+`Target`: one origin webpage plus credential set, and the prefix of every recipe key
+it owns (`"<source>.<flow>"`). Each source becomes an Airflow `TaskGroup`, and each
+recipe inside it is an independent `build_request_<flow>` -> `execute_<flow>` task
+pair, so one recipe failing, retrying, or being skipped never blocks its siblings.
+Add a source or recipe by editing `SOURCES`; the DAG cannot import the scraper engine
+(separate repository, not in the Airflow image), so it re-declares the
+source-to-recipe map itself.
+
+For each recipe the build task renders a `{schema_version, recipe, params}` request and
+writes it to GCS, then the `CloudRunExecuteJobOperator` executes the job with
+`REQUEST_URI` and `OUTPUT_URI` as per-execution env overrides. Request and result
+objects are keyed by both the run id and the recipe so recipes of one run never
+collide:
+
+```text
+scrape/requests/<run_id>/<recipe>.json
+scrape/results/<run_id>/<recipe>.json
+```
+
+Configure these Airflow Variables (populate them from the Terraform output
+`scraper_airflow_variables`):
+
+- `scraper_gcp_conn_id`: Google Cloud Airflow Connection id. Required.
+- `scraper_gcp_project_id`: project id that owns the Cloud Run Job. Required.
+- `scraper_cloud_run_region`: Cloud Run Job region. Required.
+- `scraper_cloud_run_job_name`: Cloud Run Job name. Required.
+- `scraper_scrape_bucket_name`: GCS bucket for request and result objects. Required.
+- `scraper_impersonation_chain`: service account to impersonate; leave unset to
+  authenticate as the connection's own service account. Optional.
+
+The DAG runs `@monthly` with `catchup=False` and `max_active_runs=1`. Every recipe
+takes a start..end month range and returns one record per month. A scheduled run
+derives a single month from its logical date (KST minus `lookback_months`,
+`start == end`); the historical KOSA series starts 2001-01, so backfill the historical
+months deliberately rather than on unpause. Override per run through `dag_run.conf`:
+
+- `{"start_year", "start_month", "end_year", "end_month"}`: bulk-backfill an explicit
+  span (end defaults to start).
+- `{"year", "month"}`: a single month.
+- `{"lookback_months": N}`: shift the derived month back N months.
+- recipe query params (for example `country_code` and `item_code` for
+  `kosa.steel_scrap_import`): override that recipe's filter selections.
+- `{"sources": [...]}` and/or `{"recipes": [...]}`: allow-lists that narrow the run;
+  unselected recipes are skipped. Useful to re-backfill a single recipe.
+
+Recipe execute tasks can run in parallel, so several executions may log into the same
+source account at once. If a source rejects concurrent sessions, cap concurrency with
+an Airflow pool (one slot) rather than chaining the tasks, which would re-couple the
+recipes and lose failure isolation.
+
+Do not commit target URLs, selectors, credentials, or private response payloads. The
+scraper resolves credentials from Secret Manager at run time; keep connection ids,
+project ids, and bucket names in Airflow Variables populated by Terraform.
+
 ## Bloomberg Raw Data Ingestion
 
 The `mongo-data-ingestion-<category>` DAGs extract Mongo/Bloomberg sample rows,
