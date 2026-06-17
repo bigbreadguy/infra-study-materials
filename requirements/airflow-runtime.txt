@@ -1,6 +1,4 @@
 # Airflow/provider versions are resolved with the base image constraints file.
 apache-airflow-providers-google
 apache-airflow-providers-mongo
-httpx>=0.28.1
-playwright
 python-dotenv>=1.2.2
