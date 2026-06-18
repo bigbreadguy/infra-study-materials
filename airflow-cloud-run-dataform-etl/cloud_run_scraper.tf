@@ -203,3 +203,13 @@ resource "google_storage_bucket_iam_member" "airflow_scrape_bucket" {
   role   = "roles/storage.objectUser"
   member = "serviceAccount:${google_service_account.airflow_orchestrator.email}"
 }
+
+# The dl_materials transform-load reads the staged NDJSON (scrape/staging/...)
+# through a job-scoped BigQuery external table, which runs as the bigquery
+# transformer SA. It therefore needs read access to the scrape bucket; it never
+# writes here, so object viewer (read + list for the glob) is least privilege.
+resource "google_storage_bucket_iam_member" "bq_transformer_scrape_bucket" {
+  bucket = google_storage_bucket.scrape_raw.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.bigquery_transformer.email}"
+}
