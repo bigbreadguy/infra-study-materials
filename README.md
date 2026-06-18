@@ -89,6 +89,73 @@ Do not commit target URLs, selectors, credentials, or private response payloads.
 scraper resolves credentials from Secret Manager at run time; keep connection ids,
 project ids, and bucket names in Airflow Variables populated by Terraform.
 
+## Materials BigQuery Transform-Load
+
+Each recipe in the `scrape-external-data` DAG carries two downstream tasks after its
+`execute_<flow>` scrape: `normalize_<flow>` and `load_bq_<flow>`. They land the
+scraped result into the `dl_materials` BigQuery star schema
+(`dim_datasources`, `dim_metrics`, `fact_metals`), which Terraform owns (see
+`bigquery_materials.tf` in the terraform repo). The load is **opt-in per recipe**: a
+recipe with no mapping config (below) skips both tasks, so a fresh clone runs
+`build -> execute` only and raises no errors.
+
+The design mirrors the single-job ELT used by the market-index pipelines: `normalize`
+reads the recipe's result envelope from GCS and re-emits it as NDJSON (each record
+wrapped under an ASCII `row` JSON column, because the KOSA columns are Korean and
+contain spaces) to `scrape/staging/<run_id>/<recipe>.ndjson`; `load_bq` then runs one
+multi-statement BigQuery job over a job-scoped temporary external table that merges
+`dim_datasources`, `dim_metrics`, and `fact_metals` in order. All compute stays in
+BigQuery. New rows get `GENERATE_UUID()` ids and merges key on natural keys, so reruns
+are idempotent. The `시점` period (`2024.01`) becomes a month-start `logical_date` with
+`time_grain` `M`; thousands separators are stripped and values cast to `NUMERIC`.
+
+A measure's optional `previous_year_column` is **split into a second fact row** at
+`logical_date` minus one year. Previous-year rows are insert-only: they fill gaps but
+never overwrite a value the scraper later collects directly for that month.
+
+### Metric mapping config (local-only)
+
+What each recipe loads is driven entirely by one gitignored JSON file per recipe under
+`dags/local/materials_metrics/<recipe>.json` (same local-input pattern as the grain
+targets). The same config-driven transform serves every recipe; the file declares the
+recipe's Korean columns and the curated metric names:
+
+```jsonc
+{
+  "datasource": { "name": "kosa_steeldata", "description": "한국철강협회 STEEL DATA" },
+  "period_column": "시점",          // optional, default "시점"
+  "period_format": "%Y.%m",         // optional, default "%Y.%m" (strptime)
+  "time_grain": "M",                // optional, default "M"
+  "metrics": [
+    {
+      "match": { "국가": "일본", "품목명": "용해용철스크랩" },  // row selector
+      "measure_column": "국내수입 물량",                        // value column
+      "previous_year_column": "전년 물량",                      // optional split column
+      "name": "steel_scrap_import_from_japan_volume",           // dim_metrics.name slug
+      "description": "용해용철스크랩 일본 국내수입 물량",
+      "unit": "천톤"                                            // optional
+    }
+  ]
+}
+```
+
+Each metric's `match` selects the rows it applies to (e.g. `long_products_production`
+matches on `품목명` 형강/봉강/철근, one metric per item per measure). `name` must be an
+identifier slug (`[A-Za-z0-9_]+`); all values reject quotes and backslashes because they
+are embedded into the transform SQL. A malformed file fails that recipe's load with a
+precise message, never DAG import. `dim_metrics` rows are keyed by
+`(datasource_id, name)`, so the curated `name` is the stable metric identity.
+
+Configure these Airflow Variables (shared with the Mongo ingestion DAGs; populate from
+the Terraform outputs):
+
+- `gcp_conn_id`: Google Cloud Airflow Connection id for the BigQuery job. Required.
+- `bigquery_project_id`: project id that owns `dl_materials`. Required.
+- `bigquery_region`: BigQuery job location. Required.
+- `bigquery_impersonation_chain`: service account to impersonate for the BigQuery job.
+  Optional.
+- `materials_bigquery_dataset_id`: target dataset, defaults to `dl_materials`. Optional.
+
 ## Bloomberg Raw Data Ingestion
 
 The `mongo-data-ingestion-<category>` DAGs extract Mongo/Bloomberg sample rows,

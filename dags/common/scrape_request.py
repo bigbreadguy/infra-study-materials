@@ -68,5 +68,12 @@ def result_object_name(run_id: str, recipe: str) -> str:
     return f"scrape/results/{run_id}/{recipe}.json"
 
 
+def staging_object_name(run_id: str, recipe: str) -> str:
+    # NDJSON re-emit of a result's records, read by the BigQuery transform-load
+    # through a job-scoped external table. Keyed by run_id + recipe like the
+    # request/result objects.
+    return f"scrape/staging/{run_id}/{recipe}.ndjson"
+
+
 def gcs_uri(bucket: str, object_name: str) -> str:
     return f"gs://{bucket}/{object_name}"

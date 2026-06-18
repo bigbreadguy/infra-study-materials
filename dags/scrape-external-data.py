@@ -35,6 +35,8 @@ from airflow.sdk.exceptions import AirflowSkipException
 # pyrefly: ignore [missing-import]
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 # pyrefly: ignore [missing-import]
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+# pyrefly: ignore [missing-import]
 from airflow.providers.google.cloud.operators.cloud_run import (
     CloudRunExecuteJobOperator,
 )
@@ -46,7 +48,11 @@ from common.scrape_request import (
     request_object_name,
     resolve_year_month,
     result_object_name,
+    staging_object_name,
 )
+from common.materials_metrics import has_materials_config, load_materials_config
+from common.materials_result import envelope_records, records_to_ndjson
+from common.materials_bigquery import run_materials_transform
 
 
 # Registry of what to scrape, grouped by source. A "source" is the scraper's Target
@@ -98,6 +104,21 @@ def _config() -> dict[str, str | None]:
         "job_name": _required_variable("scraper_cloud_run_job_name"),
         "bucket": _required_variable("scraper_scrape_bucket_name"),
         "impersonation_chain": _optional_variable("scraper_impersonation_chain"),
+    }
+
+
+def _bq_config() -> dict[str, str | None]:
+    # The transform-load writes BigQuery, so it reuses the shared bigquery_*
+    # Variables (same as the mongo ingestion DAGs), not the scraper_* GCS ones.
+    # The dataset defaults to dl_materials (Terraform owns the dataset/tables).
+    return {
+        "gcp_conn_id": _required_variable("gcp_conn_id"),
+        "project_id": _required_variable("bigquery_project_id"),
+        "dataset_id": Variable.get(
+            "materials_bigquery_dataset_id", default="dl_materials"
+        ),
+        "region": _required_variable("bigquery_region"),
+        "impersonation_chain": _optional_variable("bigquery_impersonation_chain"),
     }
 
 
@@ -250,6 +271,90 @@ with DAG(
             "output_uri": gcs_uri(config["bucket"], result_object),
         }
 
+    @task()
+    def normalize_result_to_ndjson(recipe: str) -> dict[str, Any]:
+        """Read the recipe's result envelope and stage it as wrapped NDJSON.
+
+        Skips recipes with no metric mapping config (so loading is opt-in and a
+        fresh clone with no configs raises no errors) and recipes whose scrape
+        returned no rows. BigQuery external tables need NDJSON and the records'
+        Korean keys carry spaces, so each record is wrapped under an ASCII ``row``
+        column (see common/materials_result).
+        """
+        if not has_materials_config(recipe):
+            raise AirflowSkipException(f"no materials metrics config for {recipe}")
+
+        context = get_current_context()
+        run_id = context["run_id"]
+        config = _config()
+
+        gcs_hook = GCSHook(
+            # pyrefly: ignore [bad-argument-type]
+            gcp_conn_id=config["gcp_conn_id"],
+            impersonation_chain=config["impersonation_chain"],
+        )
+        result_object = result_object_name(run_id, recipe)
+        raw = gcs_hook.download(
+            # pyrefly: ignore [bad-argument-type]
+            bucket_name=config["bucket"],
+            object_name=result_object,
+        )
+        envelope = json.loads(raw.decode("utf-8") if isinstance(raw, bytes) else raw)
+        records = envelope_records(envelope)
+        if not records:
+            raise AirflowSkipException(f"{recipe} result has no rows to load")
+
+        from common.gcs_object import upload_replacing_object
+
+        staging_object = staging_object_name(run_id, recipe)
+        upload_replacing_object(
+            gcs_hook,
+            # pyrefly: ignore [bad-argument-type]
+            bucket_name=config["bucket"],
+            object_name=staging_object,
+            data=records_to_ndjson(records),
+            mime_type="application/x-ndjson",
+        )
+
+        return {
+            # pyrefly: ignore [bad-argument-type]
+            "staging_uri": gcs_uri(config["bucket"], staging_object),
+            "row_count": len(records),
+        }
+
+    @task()
+    def load_to_bigquery(recipe: str, staging: dict[str, Any]) -> dict[str, Any]:
+        """Run the recipe's whole transform-load as a single BigQuery job."""
+        materials_config = load_materials_config(recipe)
+        if materials_config is None:
+            # Defensive: normalize already skips this case, so the load skips too.
+            raise AirflowSkipException(f"no materials metrics config for {recipe}")
+
+        bq = _bq_config()
+        hook = BigQueryHook(
+            # pyrefly: ignore [bad-argument-type]
+            gcp_conn_id=bq["gcp_conn_id"],
+            impersonation_chain=bq["impersonation_chain"],
+            location=bq["region"],
+        )
+        client = hook.get_client(
+            project_id=bq["project_id"],
+            location=bq["region"],
+        )
+        result = run_materials_transform(
+            client,
+            # pyrefly: ignore [bad-argument-type]
+            project_id=bq["project_id"],
+            # pyrefly: ignore [bad-argument-type]
+            dataset_id=bq["dataset_id"],
+            # pyrefly: ignore [bad-argument-type]
+            region=bq["region"],
+            raw_gcs_uri=staging["staging_uri"],
+            config=materials_config,
+            expected_row_count=staging.get("row_count"),
+        )
+        return {"recipe": recipe, **result, "row_count": staging.get("row_count")}
+
     # Fan out by source -> recipe. Each source is a TaskGroup (one origin webpage +
     # credential set); each recipe inside it is an independent build+execute pair, so a
     # failure/retry/skip of one recipe never blocks its siblings. A new source/recipe is
@@ -305,4 +410,14 @@ with DAG(
                     impersonation_chain="{{ var.value.get('scraper_impersonation_chain', '') }}",
                 )
 
-                request_uris >> execute_scraper_job
+                # Transform-load is a downstream, opt-in step: it skips recipes
+                # without a gitignored materials mapping config, so a recipe runs
+                # build -> execute on its own until its config lands.
+                staging = normalize_result_to_ndjson.override(
+                    task_id=f"normalize_{flow}"
+                )(recipe=recipe_key)
+                load_bq = load_to_bigquery.override(task_id=f"load_bq_{flow}")(
+                    recipe=recipe_key, staging=staging
+                )
+
+                request_uris >> execute_scraper_job >> staging >> load_bq
