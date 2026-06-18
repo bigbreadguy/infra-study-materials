@@ -183,6 +183,16 @@ resource "google_bigquery_table" "materials" {
   }
 }
 
+# Table access is dataset-scoped (project-level jobUser is granted once in
+# bigquery_transform.tf and covers every dataset). The transform-load MERGEs the
+# materials tables, so the transformer SA needs dataEditor on this dataset too.
+resource "google_bigquery_dataset_iam_member" "bigquery_transformer_materials_dataset_editor" {
+  project    = var.project_id
+  dataset_id = google_bigquery_dataset.materials.dataset_id
+  role       = "roles/bigquery.dataEditor"
+  member     = "serviceAccount:${google_service_account.bigquery_transformer.email}"
+}
+
 output "bigquery_materials_dataset" {
   description = "BigQuery dataset configured for the KOSA materials star schema."
   value = {
