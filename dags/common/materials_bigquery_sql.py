@@ -79,11 +79,13 @@ def _safe_literal(value: str) -> str:
 
 
 def _json_value(column: str) -> str:
-    # Read a (possibly Korean, space-containing) field from the wrapped row JSON
-    # via bracket-quoted JSON path, e.g. JSON_VALUE(row, '$["국내수입 물량"]').
+    # Read a (possibly Korean, space-containing) field from the wrapped row JSON.
+    # BigQuery JSONPath escapes special-character keys with a dot + double quotes
+    # (e.g. JSON_VALUE(row, '$."국내수입 물량"')); it rejects bracket notation
+    # ($["..."]) with "Invalid token in JSONPath".
     if '"' in column or "'" in column or "\\" in column:
         raise ValueError(f"column {column!r} must not contain quotes or backslashes")
-    return f"JSON_VALUE(row, '$[\"{column}\"]')"
+    return f"JSON_VALUE(row, '$.\"{column}\"')"
 
 
 def _numeric_expr(column: str) -> str:

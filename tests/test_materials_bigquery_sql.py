@@ -63,16 +63,18 @@ class TransformSqlTests(TestCase):
         self.assertEqual(_sql().count("GENERATE_UUID()"), 3)
 
     def test_reads_korean_columns_via_json_path(self):
-        self.assertIn('JSON_VALUE(row, \'$["국내수입 물량"]\')', _sql())
+        # BigQuery escapes special-char keys with dot + double quotes, not brackets.
+        self.assertIn('JSON_VALUE(row, \'$."국내수입 물량"\')', _sql())
+        self.assertNotIn('$["', _sql())
 
     def test_strips_thousands_separator(self):
-        self.assertIn("REPLACE(JSON_VALUE(row, '$[\"국내수입 물량\"]'), ',', '')", _sql())
+        self.assertIn("REPLACE(JSON_VALUE(row, '$.\"국내수입 물량\"'), ',', '')", _sql())
 
     def test_previous_year_splits_one_year_back(self):
         sql = _sql(previous_year=True)
         self.assertIn("DATE_SUB(SAFE.PARSE_DATE('%Y.%m'", sql)
         self.assertIn("INTERVAL 1 YEAR", sql)
-        self.assertIn('JSON_VALUE(row, \'$["전년 물량"]\')', sql)
+        self.assertIn('JSON_VALUE(row, \'$."전년 물량"\')', sql)
 
     def test_no_previous_year_when_unset(self):
         sql = _sql(previous_year=False)
