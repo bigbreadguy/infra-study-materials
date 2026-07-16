@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "STEO.PAPR_TC.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_intl_production",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 국제 생산",
+    "category_2": "international_production"
+  },
+  "metrics": [
+    {
+      "match": {
+        "seriesId": "PAPR_TC"
+      },
+      "measure_column": "value",
+      "name": "prod_uae",
+      "description": "UAE 원유 및 액체연료 공급 (월간)",
+      "unit": "million barrels per day"
+    }
+  ]
+}

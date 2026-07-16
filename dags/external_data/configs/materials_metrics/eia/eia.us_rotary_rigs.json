@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.E_ERTRR0_XR0_NUS_C.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_us_supply",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 공급",
+    "category_2": "us_supply"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "E_ERTRR0_XR0_NUS_C"
+      },
+      "measure_column": "value",
+      "name": "us_rotary_rigs",
+      "description": "미국 원유 천연가스 시추 리그 가동 수 (월간)",
+      "unit": "count"
+    }
+  ]
+}

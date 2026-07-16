@@ -1,0 +1,36 @@
+{
+  "scrape": {
+    "recipe": "kosis.series",
+    "params": {
+      "org_id": "101",
+      "tbl_id": "DT_1F32001",
+      "itm_id": "T20+",
+      "obj_l1": "C30+"
+    }
+  },
+  "datasource": {
+    "name": "kosis",
+    "description": "KOSIS 국가통계포털"
+  },
+  "period_column": "PRD_DE",
+  "period_format": "%Y%m",
+  "time_grain": "M",
+  "floor_period": "1980-01",
+  "category": {
+    "name": "manufacturing_operation",
+    "category_0": "manufacturing",
+    "description": "제조업 가동률"
+  },
+  "metrics": [
+    {
+      "match": {
+        "C1": "C30",
+        "ITM_ID": "T20"
+      },
+      "measure_column": "DT",
+      "name": "manufacturing_operation_rate_index_motor_vehicles",
+      "description": "자동차 및 트레일러 제조업 가동률지수(원지수)",
+      "unit": "2020=100"
+    }
+  ]
+}

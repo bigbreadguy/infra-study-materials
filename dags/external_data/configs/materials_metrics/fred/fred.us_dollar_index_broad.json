@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "fred.series",
+    "params": {
+      "series_id": "DTWEXBGS"
+    }
+  },
+  "datasource": {
+    "name": "fred",
+    "description": "Federal Reserve Economic Data (FRED)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "category": {
+    "name": "dollar_index",
+    "category_0": "market_macro",
+    "category_1": "fx",
+    "description": "시장/매크로 - 환율 - 달러지수"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series_id": "DTWEXBGS"
+      },
+      "measure_column": "value",
+      "name": "us_dollar_index_broad",
+      "description": "미국 무역가중 달러지수 (광범위 goods and services, 일별)",
+      "unit": "index"
+    }
+  ]
+}

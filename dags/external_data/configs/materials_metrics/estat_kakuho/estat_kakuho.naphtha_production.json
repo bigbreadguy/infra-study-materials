@@ -1,0 +1,27 @@
+{
+  "datasource": {
+    "name": "estat_kakuho",
+    "description": "e-Stat Petroleum Statistics Final Report (authoritative file source)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_production",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "category_2": "production",
+    "description": "에너지 - 석유 - 생산"
+  },
+  "metrics": [
+    {
+      "match": {
+        "metric": "naphtha_production"
+      },
+      "measure_column": "value",
+      "name": "jp_naphtha_production",
+      "description": "일본 나프타 생산량 (월간, 석유통계 확정치)",
+      "unit": "kl"
+    }
+  ]
+}

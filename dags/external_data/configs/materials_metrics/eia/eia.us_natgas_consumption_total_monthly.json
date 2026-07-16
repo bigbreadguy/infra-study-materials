@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "TOTAL.NGTCPUS.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_natural_gas_us",
+    "category_0": "energy",
+    "category_1": "natural_gas",
+    "description": "에너지 - 천연가스 - 미국",
+    "category_2": "us"
+  },
+  "metrics": [
+    {
+      "match": {
+        "msn": "NGTCPUS"
+      },
+      "measure_column": "value",
+      "name": "us_natgas_consumption_total_monthly",
+      "description": "미국 천연가스 총 소비 월간 누계 (Total Energy)",
+      "unit": "billion cubic feet"
+    }
+  ]
+}

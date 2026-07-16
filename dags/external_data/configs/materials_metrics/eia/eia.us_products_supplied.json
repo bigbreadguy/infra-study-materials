@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.WRPUPUS2.W"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "category": {
+    "name": "energy_petroleum_us_demand",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 수요",
+    "category_2": "us_demand"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "WRPUPUS2"
+      },
+      "measure_column": "value",
+      "name": "us_products_supplied",
+      "description": "미국 석유제품 공급량 - 석유 소비량 (주간)",
+      "unit": "MBBL/D"
+    }
+  ]
+}

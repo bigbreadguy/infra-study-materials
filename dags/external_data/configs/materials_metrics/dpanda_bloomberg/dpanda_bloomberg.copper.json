@@ -1,0 +1,1042 @@
+{
+  "datasource": {
+    "name": "dpanda_bloomberg",
+    "description": "dpanda Bloomberg market index ingestion"
+  },
+  "period_column": "logical_date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "category": {
+    "name": "metal_copper",
+    "category_0": "metal",
+    "category_1": "copper",
+    "description": "금속 - 구리"
+  },
+  "measures": [
+    "open",
+    "high",
+    "low",
+    "close",
+    {
+      "column": "volume",
+      "unit": "Contracts"
+    },
+    {
+      "column": "openinterest",
+      "unit": "Contracts"
+    }
+  ],
+  "metrics": [
+    {
+      "match": {
+        "grain_id": "copper_cash_offer",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Cu_Cash",
+      "description": "LME 전기동 현물가",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_3m_offer",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Cu_3M",
+      "description": "LME 전기동 3개월 선물 매수가",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "1_16_-1",
+        "dataset_id": "69328021455eba93435a27c3"
+      },
+      "name": "Com_Copper_Prod",
+      "description": "칠레 전기동 정광 생산량",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "COBRE",
+        "dataset_id": "693fb257455eba93435b8300"
+      },
+      "name": "Com_Copper_Prod_Peru_gov",
+      "description": "페루 구리 광산 생산량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "2_20_0",
+        "dataset_id": "69328021455eba93435a27c3"
+      },
+      "name": "Com_Copper_Refined_Exports",
+      "description": "칠레 정제 구리 수출량",
+      "unit": "Million USD",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "2_20_2",
+        "dataset_id": "69328021455eba93435a27c3"
+      },
+      "name": "Com_Copper_Bulk_Exports",
+      "description": "칠레 구리 벌크 수출량",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_mined_total_prod",
+        "dataset_id": "693fb256455eba93435b82fd"
+      },
+      "name": "Com_Copper_Mined_Total_Prod_RioTinto",
+      "description": "Rio Tinto 구리 생산량",
+      "unit": "kMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "production_1",
+        "dataset_id": "693fb256455eba93435b82fe"
+      },
+      "name": "Com_Copper_Exports_DRC",
+      "description": "콩고민주공화국 구리수출량",
+      "unit": "t",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "exportation_1",
+        "dataset_id": "693fb256455eba93435b82fe"
+      },
+      "name": "Com_Copper_Prod_DRC",
+      "description": "콩고민주공화국 구리생산량",
+      "unit": "t",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "Total_Copper_Production_China",
+        "dataset_id": "69328dca455eba93435acd64"
+      },
+      "name": "Com_Copper_Prod_China",
+      "description": "중국 구리 반제품 생산량",
+      "unit": "MT",
+      "time_grain": "Y",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "A02092H01",
+        "dataset_id": "69328021455eba93435a27c6"
+      },
+      "name": "Com_AC_Prod_China",
+      "description": "중국 에어컨 생산량",
+      "unit": "10k Units",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "ASSET_INVEST",
+        "dataset_id": "69328021455eba93435a27c5"
+      },
+      "name": "Com_Asset_Invest",
+      "description": "중국 고정자산투자액",
+      "unit": "100M",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "A040102",
+        "dataset_id": "69328021455eba93435a27c6"
+      },
+      "name": "Com_Fixed_Asset_China",
+      "description": "중국 고정자산투자액 (ytd/yoy)",
+      "unit": "100M",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "COPPER:IMPORT",
+        "dataset_id": "69328021455eba93435a27c4"
+      },
+      "name": "Com_Copper_Import_China",
+      "description": "중국 정련 구리 수입량",
+      "unit": "10k t",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "coppe",
+        "dataset_id": "69328022455eba93435a27d0"
+      },
+      "name": "Com_USGS_Cu_Import",
+      "description": "미국 정련 구리 수입량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_opening_stock",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Cu_Inv",
+      "description": "LME 구리 재고량",
+      "unit": "t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "Copper_Stocks",
+        "dataset_id": "69328021455eba93435a27c2"
+      },
+      "name": "Com_CME_Cu_inv",
+      "description": "CME(NYMEX) 정련 구리 재고량",
+      "unit": "t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "cu",
+        "dataset_id": "69328022455eba93435a27cf"
+      },
+      "name": "Com_SHFE_Cu_Inv",
+      "description": "SHFE 정련 구리 재고량",
+      "unit": "MT",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "VC",
+        "dataset_id": "68c90e7b5ca53d5d938cdd98"
+      },
+      "name": "Com_SHFE_Cu",
+      "description": "SHFE 전기동 선물",
+      "unit": "CNY/t",
+      "time_grain": "W",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        {
+          "column": "volume",
+          "unit": "Lots"
+        },
+        {
+          "column": "openinterest",
+          "unit": "Lots"
+        }
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "085692_comm_net",
+        "dataset_id": "69328022455eba93435a27d1"
+      },
+      "name": "Com_CFTC_Cu_comm_net",
+      "description": "CME 구리선물 상업 long/short",
+      "unit": "Contract",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "085692_noncomm_net",
+        "dataset_id": "69328022455eba93435a27d1"
+      },
+      "name": "Com_CFTC_Cu_noncomm_net",
+      "description": "CME 구리선물 비상업 long/short",
+      "unit": "Contract",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "world_mine_production",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_mine_prod_conc_sxew",
+      "description": "세계 구리 광산 생산 (정광+SX-EW 포함)",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "world_mine_capacity",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_mine_capacity",
+      "description": "세계 구리 광산 생산능력",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "mine_capacity_utilization_rate",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_mine_capacity_util_rate",
+      "description": "구리 광산 가동률 (%)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "primary_refined_production",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_prod_primary",
+      "description": "1차 정련 구리 생산",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "secondary_refined_production",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_prod_secondary",
+      "description": "2차 정련 구리 생산",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "world_refined_production",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_prod_total",
+      "description": "세계 정련 구리 생산 합계",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "world_refinery_capacity",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refinery_capacity",
+      "description": "세계 구리 정련소(Refinery) 생산능력",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "refinery_capacity_utilization_rate",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refinery_capacity_util_rate",
+      "description": "구리 정련소(Refinery) 가동률 (%)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "world_refined_usage",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_usage",
+      "description": "세계 정련 구리 소비",
+      "unit": "kMT/Year",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "world_refined_stocks_end_of_period",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_stocks_eop",
+      "description": "세계 정련 구리 기말 재고",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "period_stock_change",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_stock_change",
+      "description": "기간 구리 재고 변동",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "refined_balance",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_balance",
+      "description": "정련 구리 수급 균형",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "seasonally_adjusted_refined_balance",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_balance_sa",
+      "description": "계절 조정 정련 구리 수급 균형",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "refined_balance_adjusted_chinese_bonded",
+        "dataset_id": "6974b5ac6248db3eaaad8a51"
+      },
+      "name": "Com_ICSG_Cu_refined_balance_adj_cn_bonded_stock",
+      "description": "중국 보세창고 구리 재고 변동 조정 수급 균형",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_spread",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Cu_Spread",
+      "description": "LME 구리 Official Prices 3개월-현물 스프레드",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "CECN0002_SMMC_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "Idx_China_Cu_prm",
+      "description": "전기동 중국(양산) 프리미엄",
+      "unit": "MT",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "Copper:1",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Cu_comm_net",
+      "description": "LME 구리선물 헤지 포지션 상업 long/short",
+      "unit": "Contract",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "Copper:0",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Cu_noncomm_net",
+      "description": "LME 구리선물 헤지 포지션 비상업 long/short",
+      "unit": "Contract",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "CECNS001_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "Idx_China_Cu_scrp",
+      "description": "중국 전기동 스크랩 (베어브라이트) 평균 가격",
+      "unit": "CNY/MT",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "copper_total_prod",
+        "dataset_id": "697c10bc47c1ab09efdd152e"
+      },
+      "name": "Com_Copper_Total_Prod_BHP",
+      "description": "BHP 구리 전체 생산량",
+      "unit": "kMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_total_prod",
+        "dataset_id": "694206105531ef85416565c7"
+      },
+      "name": "Com_Copper_Total_Prod_Nornickel",
+      "description": "Nornickel 구리 전체 생산량",
+      "unit": "MT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_total_prod",
+        "dataset_id": "694206105531ef85416565c8"
+      },
+      "name": "Com_Copper_Total_Prod_Vale",
+      "description": "Vale 구리 전체 생산량",
+      "unit": "kMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "copper_total_prod",
+        "dataset_id": "697c10bc47c1ab09efdd152d"
+      },
+      "name": "Com_Copper_Total_Prod_AngloAmerican",
+      "description": "Anglo American 구리 전체 생산량",
+      "unit": "MT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "CMINCOPR_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "BCCh_Copper_Export",
+      "description": "칠레 구리 수출량",
+      "unit": "Million USD",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "HG1_COMB_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "CME_Copper",
+      "description": "CME(NYMEX) 전기동",
+      "unit": "USD/lb",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "ZACNITHE_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "Idx_TCRC",
+      "description": "중국 TCRC",
+      "unit": "USD/MT",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNLCIGRD_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBS_Grid_Investment_Cum",
+      "description": "중국 전력망 인프라 누적 투자액",
+      "unit": "billion",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNLCIGRY_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBS_Grid_Investment_Cum_YoY",
+      "description": "중국 전력망 인프라 누적 투자액 (YoY)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CHRXNEWB_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBS_Housing_Starts_Cum",
+      "description": "중국 부동산 신규착공면적 누적",
+      "unit": "million",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CHRXNRES_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBS_Housing_Starts_Residential_Cum",
+      "description": "중국 부동산 신규착공면적 누적 (주거용)",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CSTNSPCM_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBS_Housing_Completions",
+      "description": "중국 부동산 준공면적",
+      "unit": "thousand",
+      "time_grain": "Q",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CSTNSRES_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBS_Housing_Completions_Residential",
+      "description": "중국 부동산 준공면적 (주거용)",
+      "unit": "thousand",
+      "time_grain": "Q",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CPWIIQTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "GACC_Copper_Scrap_Imports",
+      "description": "중국 구리 스크랩 수입량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "SEM1TOWO_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Global_Semiconductor_Sales",
+      "description": "글로벌 반도체 연간 매출액",
+      "unit": "million",
+      "time_grain": "Y",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "TWEOELY_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "MOEA_Electronics_Export_Orders_YoY",
+      "description": "대만 전자제품 수출 주문 지수 (YoY)",
+      "unit": "Million USD",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "TWEOEL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "MOEA_Electronics_Export_Orders",
+      "description": "대만 전자제품 수출 주문 지수",
+      "unit": "Million USD",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "TWEXIC_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "MOEA_IC_Exports",
+      "description": "대만 집적회로(IC) 수출액",
+      "unit": "Million USD",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "MEPRCICW_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "LME_Cancelled_Warrants_Ratio",
+      "description": "LME 출고예정재고 비율(Cancelled Warrants)",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CECNST05_Index",
+        "dataset_id": "69c38c4df2f7689012b80a75"
+      },
+      "name": "SHFE_Copper_Social_Inventory",
+      "description": "상하이 구리 음극판 사회재고량",
+      "unit": "10kMT",
+      "time_grain": "W",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "LMCAY03_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "LME_Cash_3M_Spread",
+      "description": "LME 현물-3개월 스프레드",
+      "unit": "USD/MT",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "LMFUCAOT_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "LME_Copper_Open_Interest",
+      "description": "LME 구리 선물 미결제약정",
+      "unit": "USD/Contracts",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "I00426US_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "Mining_HY_Bond_Index_Yield",
+      "description": "광산기업 고수익채권 수익률 지수",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CTCTVSQW_Index",
+        "dataset_id": "69c38c4df2f7689012b80a75"
+      },
+      "name": "CTA_Copper_Net_Position",
+      "description": "CTA 구리 순포지션 (2018~)",
+      "unit": "Contracts",
+      "time_grain": "W",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "COTMCMMN_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "CTA_Copper_Net_Position_Pre2018",
+      "description": "CTA 구리 순포지션 (~2018)",
+      "unit": "Contracts",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "COPA_LN_Equity",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "COPA_Copper_ETC",
+      "description": "WisdomTree Copper ETC 유통주식수",
+      "unit": "Shares",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CPER_US_EQUITY",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "CPER_Copper_ETF",
+      "description": "CPER Copper ETF 유통주식수",
+      "unit": "Shares",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "KOTCSEM_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "MOTIR_KR_Semiconductor_prod",
+      "description": "한국 반도체 수출액",
+      "unit": "Million USD",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    }
+  ]
+}

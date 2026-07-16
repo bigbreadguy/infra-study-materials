@@ -1,0 +1,27 @@
+{
+  "datasource": {
+    "name": "estat_kakuho",
+    "description": "e-Stat Petroleum Statistics Final Report (authoritative file source)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_consumption",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "category_2": "consumption",
+    "description": "에너지 - 석유 - 소비"
+  },
+  "metrics": [
+    {
+      "match": {
+        "metric": "lpg_consumption"
+      },
+      "measure_column": "value",
+      "name": "jp_lpg_consumption",
+      "description": "일본 LPG 국내 판매량 (월간, 석유통계 확정치)",
+      "unit": "t"
+    }
+  ]
+}

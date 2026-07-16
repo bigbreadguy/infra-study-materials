@@ -1,0 +1,514 @@
+{
+  "datasource": {
+    "name": "dpanda_bloomberg",
+    "description": "dpanda Bloomberg market index ingestion"
+  },
+  "period_column": "logical_date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "category": {
+    "name": "metal_nickel",
+    "category_0": "metal",
+    "category_1": "nickel",
+    "description": "금속 - 니켈"
+  },
+  "measures": [
+    "open",
+    "high",
+    "low",
+    "close",
+    {
+      "column": "volume",
+      "unit": "shares"
+    },
+    {
+      "column": "openinterest",
+      "unit": "lots"
+    }
+  ],
+  "metrics": [
+    {
+      "match": {
+        "grain_id": "nickel_cash_offer",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Ni_Cash",
+      "description": "니켈 LME Cash",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "nickel_ferronickel_prod",
+        "dataset_id": "6942060f5531ef85416565bf"
+      },
+      "name": "Com_Nickel_Ferronickel_Prod_Antam",
+      "description": "인도네시아 antam 니켈광산 생산량",
+      "unit": "WMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "nickel_ore_total_sales_cum",
+        "dataset_id": "694206105531ef85416565c6"
+      },
+      "name": "Com_Nickel_Ore_Total_Sales_Cum_NickelAsia",
+      "description": "필리핀 nickelasia 니켈광석 누적 판매량",
+      "unit": "M WMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "Ferro_nickel",
+        "dataset_id": "6942060f5531ef85416565c0"
+      },
+      "name": "Com_Ferronickel_Prod_Japan",
+      "description": "일본 페로니켈 생산량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "nickel_total_prod",
+        "dataset_id": "694206105531ef85416565c7"
+      },
+      "name": "Com_Nickel_Total_Prod_Nornickel",
+      "description": "러시아 Nornickel 니켈광산 생산량",
+      "unit": "MT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "nickel_total_prod",
+        "dataset_id": "694206105531ef85416565c8"
+      },
+      "name": "Com_Nickel_Total_Prod_Vale",
+      "description": "브라질 Vale 니켈 광산 생산량",
+      "unit": "kMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "stainless_pipes_and_tubes_unclassified",
+        "dataset_id": "6974b5ac6248db3eaaad8a52"
+      },
+      "name": "Com_Steel_Export_USA_Stainless_PipesAndTubesUnclassified",
+      "description": "미국 스테인리스 관·튜브(기타/미분류) 수출량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "stainless_sheets_cold_rolled",
+        "dataset_id": "6974b5ac6248db3eaaad8a52"
+      },
+      "name": "Com_Steel_Export_USA_Stainless_SheetsColdRolled",
+      "description": "미국 스테인리스 강판(냉연) 수출량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "stainless_strip_hot_rolled",
+        "dataset_id": "6974b5ac6248db3eaaad8a52"
+      },
+      "name": "Com_Steel_Export_USA_Stainless_StripHotRolled",
+      "description": "미국 스테인리스 스트립(열연) 수출량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "stainless_structural_shapes_heavy",
+        "dataset_id": "6974b5ac6248db3eaaad8a52"
+      },
+      "name": "Com_Steel_Export_USA_Stainless_StructuralShapesHeavy",
+      "description": "미국 스테인리스 중량 형강 수출량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "stainless_wire_drawn",
+        "dataset_id": "6974b5ac6248db3eaaad8a52"
+      },
+      "name": "Com_Steel_Export_USA_Stainless_WireDrawn",
+      "description": "미국 스테인리스 인발선 수출량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "china_sts_crude_steel",
+        "dataset_id": "6974b5ac6248db3eaaad8a55"
+      },
+      "name": "Com_CrudeSteel_Prod_China",
+      "description": "중국 조강 생산량",
+      "unit": "10kMT",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "N2IDMHPP_SMMC_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "SMMC_MHP",
+      "description": "인도네시아 니켈 MHP 산출량",
+      "unit": "10kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "N2IDMATP_SMMC_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "SMMC_MAT",
+      "description": "인도네시아 니켈 매트 산출량",
+      "unit": "10kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "RNICIQTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Com_China_RefinedNickel_Import",
+      "description": "중국 정련니켈 수입량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNOIIQTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Com_China_NickelOre_Import",
+      "description": "중국 니켈 정광 수입량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "NIKLCNRP_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Com_China_Nickel_Prod",
+      "description": "중국 정련니켈 생산량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "F5CNPR01_SMMC_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Com_China_NPI_Prod",
+      "description": "중국 NPI 국내 월간 생산량",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "nickel_opening_stock",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Ni_Inv",
+      "description": "LME 정련 니켈 재고량",
+      "unit": "MT",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "ni",
+        "dataset_id": "69328022455eba93435a27cf"
+      },
+      "name": "Com_SHFE_Ni_Inv",
+      "description": "SHFE 정련 니켈 재고량",
+      "unit": "MT",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "cnljxh_coke_inv_total",
+        "dataset_id": "6976cd0c6248db3eaaadaa8f"
+      },
+      "name": "Com_Coke_inv_China_Total",
+      "description": "중국 코크스 재고량",
+      "unit": "10kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "LME-Nickel:1",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Ni_comm_net",
+      "description": "니켈 헤지 포지션(LME) 상업",
+      "unit": "1계약",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "LME-Nickel:0",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Ni_noncomm_net",
+      "description": "니켈 헤지 포지션(LME) 비상업",
+      "unit": "1계약",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "NICNPR03_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "GACC_CN_Refined_Nickel_prod",
+      "description": "중국 정련니켈 현장실측 생산량 (SMM)",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "F5CNPR08_SMMC_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "SMM_CN_NPI_prod",
+      "description": "중국계 기업 전체 NPI 월간 생산량",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "ANSPTOTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Com_China_STS_Prod",
+      "description": "중국 STS 생산량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "5",
+        "dataset_id": "6942060f5531ef85416565c2"
+      },
+      "name": "Com_STS_Prod_US",
+      "description": "미국 STS 생산량",
+      "unit": "mMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "4",
+        "dataset_id": "6942060f5531ef85416565c2"
+      },
+      "name": "Com_STS_Prod_EU",
+      "description": "유럽 STS 생산량",
+      "unit": "mMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "2",
+        "dataset_id": "6942060f5531ef85416565c2"
+      },
+      "name": "Com_STS_Prod_AsiaExChina",
+      "description": "아시아(중국 제외) STS 생산량",
+      "unit": "mMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "vw_group",
+        "dataset_id": "6942060f5531ef85416565c1"
+      },
+      "name": "Com_EV_Sales_VW",
+      "description": "폭스바겐 전기차 판매",
+      "unit": "1 car",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "eu_bev",
+        "dataset_id": "6942060f5531ef85416565c1"
+      },
+      "name": "Com_EV_Reg_EU_BEV",
+      "description": "EU 대체에너지 자동차 신규등록대수 (BEV)",
+      "unit": "1 car",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "eu_phev",
+        "dataset_id": "6942060f5531ef85416565c1"
+      },
+      "name": "Com_EV_Reg_EU_PHEV",
+      "description": "EU 대체에너지 자동차 신규등록대수 (PHEV)",
+      "unit": "1 car",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "eu_hev",
+        "dataset_id": "6942060f5531ef85416565c1"
+      },
+      "name": "Com_EV_Reg_EU_HEV",
+      "description": "EU 대체에너지 자동차 신규등록대수 (HEV)",
+      "unit": "1 car",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "tesla_total_deliveries",
+        "dataset_id": "6942060f5531ef85416565c3"
+      },
+      "name": "Com_EV_Sales_TSLA",
+      "description": "테슬라 전기차 판매",
+      "unit": "1 car",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "byd_total_deliveries",
+        "dataset_id": "694206105531ef85416565c4"
+      },
+      "name": "Com_EV_Sales_BYD",
+      "description": "중국 BYD 전기차 판매",
+      "unit": "1 car",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    }
+  ]
+}

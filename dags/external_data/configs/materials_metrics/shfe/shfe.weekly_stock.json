@@ -1,0 +1,48 @@
+{
+  "scrape": {
+    "recipe": "shfe.weekly_stock",
+    "params": {
+      "product_id": "al"
+    }
+  },
+  "datasource": {
+    "name": "shfe",
+    "description": "상하이선물거래소 (Shanghai Futures Exchange, SHFE)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "floor_date": "2014-05-23",
+  "category": {
+    "name": "shfe_aluminium_stock",
+    "category_0": "commodity",
+    "category_1": "base_metals",
+    "category_2": "aluminium",
+    "description": "SHFE 정련 알루미늄 재고량"
+  },
+  "metrics": [
+    {
+      "name": "shfe_al",
+      "description": "SHFE 정련 알루미늄 재고량",
+      "match": {
+        "product_id": "al",
+        "row_type": "total",
+        "warehouse": "Total"
+      },
+      "measures": [
+        {
+          "column": "stock",
+          "suffix": "stock",
+          "unit": "톤",
+          "description_suffix": "현물 재고량 소계 (Delivery-able)"
+        },
+        {
+          "column": "futures",
+          "suffix": "warrant_stock",
+          "unit": "톤",
+          "description_suffix": "창고증권 재고 총계 (On Warrant)"
+        }
+      ]
+    }
+  ]
+}

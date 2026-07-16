@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.MDIUPUS2.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_us_demand",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 수요",
+    "category_2": "us_demand"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "MDIUPUS2"
+      },
+      "measure_column": "value",
+      "name": "us_distillate_supplied_monthly",
+      "description": "미국 난방유(distillate) 소비량 (월간)",
+      "unit": "MBBL/D"
+    }
+  ]
+}

@@ -1,0 +1,1053 @@
+{
+  "datasource": {
+    "name": "dpanda_bloomberg",
+    "description": "dpanda Bloomberg market index ingestion"
+  },
+  "period_column": "logical_date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "market_macro",
+    "category_0": "market_macro",
+    "description": "거시지표"
+  },
+  "metrics": [
+    {
+      "match": {
+        "grain_id": "461",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_CN_gdp_yoy",
+      "description": "중국 GDP YoY",
+      "unit": "%",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "2064156_1_3",
+        "dataset_id": "6974b5ac6248db3eaaad8a54"
+      },
+      "name": "Com_PMI_Manufacturing_HSBC_China",
+      "description": "중국 caixin 제조업 pmi",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "868",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_CN_gdp_qoq",
+      "description": "중국 GDP QoQ",
+      "unit": "%",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "G7",
+        "dataset_id": "69328022455eba93435a27ce"
+      },
+      "name": "Idx_OECD_CLI_G7",
+      "description": "G7 경기선행지수",
+      "unit": "Long-term average = 100",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "CHN",
+        "dataset_id": "69328022455eba93435a27ce"
+      },
+      "name": "Idx_OECD_CLI_CHN",
+      "description": "중국 경기선행지수",
+      "unit": "Long-term average = 100",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "USA",
+        "dataset_id": "69328022455eba93435a27ce"
+      },
+      "name": "Idx_OECD_CLI_USA",
+      "description": "미국 경기선행지수",
+      "unit": "Long-term average = 100",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "Total_index_index",
+        "dataset_id": "69328021455eba93435a27c7"
+      },
+      "name": "Idx_Industry_Prod_US",
+      "description": "미국 산업생산지수",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "Total_index_percent",
+        "dataset_id": "69328021455eba93435a27c7"
+      },
+      "name": "Idx_Industry_Prod_US_mom",
+      "description": "미국 산업생산지수 (mom)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "sts_inpr_m_index",
+        "dataset_id": "69328021455eba93435a27c8"
+      },
+      "name": "Idx_EU_Industry_Prod",
+      "description": "EU 산업생산지수",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "sts_inpr_m_mom_pct",
+        "dataset_id": "69328021455eba93435a27c8"
+      },
+      "name": "Idx_EU_Industry_Prod_mom",
+      "description": "EU 산업생산지수 (mom)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "PERMIT",
+        "dataset_id": "69328021455eba93435a27cb"
+      },
+      "name": "Com_Building_Permit_US",
+      "description": "미국 건축승인건수",
+      "unit": "1,000 cases",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "HOUST",
+        "dataset_id": "69328021455eba93435a27cb"
+      },
+      "name": "Com_Housing_Start_US",
+      "description": "미국 주택착공건수",
+      "unit": "1,000 cases",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "462",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_CN_industrial_prod_yoy",
+      "description": "중국 산업생산 (YoY)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "A020102",
+        "dataset_id": "69328021455eba93435a27c6"
+      },
+      "name": "Com_Industry_Prod_China_acc_yoy",
+      "description": "중국 산업 생산량 연누계 기준 전년 대비(ytd/yoy)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "EX_EUR:USD",
+        "dataset_id": "69328021455eba93435a27ca"
+      },
+      "name": "EX_EUR_USD",
+      "description": "환율(EUR/USD)",
+      "unit": "EURO/USD",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "EX_USD_CLP",
+        "dataset_id": "69328020455eba93435a27c1"
+      },
+      "name": "EX_USD_CLP",
+      "description": "환율(USD/CLP)",
+      "unit": "USD/CLP",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "VIX",
+        "dataset_id": "68c90e7b5ca53d5d938cdd98"
+      },
+      "name": "Idx_VIX",
+      "description": "Volatility Index",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        {
+          "column": "volume",
+          "unit": "Contracts"
+        },
+        {
+          "column": "openinterest",
+          "unit": "Contracts"
+        }
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "DXY",
+        "dataset_id": "69328021455eba93435a27cc"
+      },
+      "name": "Idx_Dxy",
+      "description": "달러 인덱스 US 달러 지수",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        {
+          "column": "volume",
+          "unit": "Contracts"
+        },
+        {
+          "column": "openinterest",
+          "unit": "Contracts"
+        }
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "SPX",
+        "dataset_id": "68c90e7b5ca53d5d938cdd98"
+      },
+      "name": "Idx_SPX",
+      "description": "S&P500",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        {
+          "column": "volume",
+          "unit": "Contracts"
+        },
+        {
+          "column": "openinterest",
+          "unit": "Contracts"
+        }
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "603940",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "Idx_Shanghai",
+      "description": "중국상해종합지수 SSE Composite",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "lmex",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LMEX",
+      "description": "LME 지수",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "948434",
+        "dataset_id": "67beac7a4963da059bda1b37"
+      },
+      "name": "Com_BloombergCommodity_BCOM",
+      "description": "블룸버그 상품지수 (BCOM)",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "JKLA_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "CME_JP_KR_LNG_Maker",
+      "description": "액화천연가스 Japan/Korea Maker",
+      "unit": "USD/MMBtu",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "1112837",
+        "dataset_id": "67beac7a4963da059bda1b37"
+      },
+      "name": "Com_Coal_Newcastle",
+      "description": "뉴캐슬 석탄 선물 거래가",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "aluminium_3m_offer",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Al_3M",
+      "description": "LME 알루미늄 Official Prices 3개월 선물가",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "1_1_3",
+        "dataset_id": "694206105531ef85416565c5"
+      },
+      "name": "Com_Polysilicon_Price_NonChina",
+      "description": "태양광 폴리실리콘(non-china) 가격",
+      "unit": "USD/kg",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "601518",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "Com_CrudeOil",
+      "description": "WTI 크루드유 선물",
+      "unit": "USD/bbl",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "601358",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "Com_Gold",
+      "description": "금 선물 거래가",
+      "unit": "USD/t.oz",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "601357",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "Com_Silver",
+      "description": "은 선물 거래가",
+      "unit": "USD/t.oz",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "712160",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "EX_USD_BRL",
+      "description": "환율(USD/BRL)",
+      "unit": "BRL/USD",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNLNASF_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "PBOC_Total_Social_Financing",
+      "description": "중국 사회융자총액",
+      "unit": "Billion CNY",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "MWT_VWT_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "CPB_World_Trade_Volume_SA",
+      "description": "CPB 세계 교역량 지수 (계절조정)",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "MWT_VWTM_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "CPB_World_Trade_Volume_MoM",
+      "description": "CPB 세계 교역량 지수 (MoM%)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "ITV%WRLD_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "WTO_World_Trade_Volume_YoY",
+      "description": "WTO 세계 교역량 지수 (YoY%)",
+      "unit": "%",
+      "time_grain": "Y",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "471",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_KR_gdp_qoq",
+      "description": "한국 GDP 실질성장률(QoQ)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "1053",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_JP_gdp_yoy",
+      "description": "일본 GDP (YoY)",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "KOSIS010",
+        "dataset_id": "67beac7b4963da059bda1b3f"
+      },
+      "name": "_ext_KOSIS010",
+      "description": "한국 경기선행종합지수",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "191",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_JP_leading_index",
+      "description": "일본 경기선행지수",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "KDCI",
+        "dataset_id": "699d1ddbffbf6cf983e94685"
+      },
+      "name": "Idx_KR_ShippingIndex_KDCI_KOBC",
+      "description": "KOBC 건화물선 운임지수 종합",
+      "unit": "Index",
+      "time_grain": "W",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "1161259",
+        "dataset_id": "67beac7a4963da059bda1b37"
+      },
+      "name": "Com_DubaiCrude",
+      "description": "두바이 원유 가격",
+      "unit": "USD/bbl",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "712162",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "EX_USD_KRW",
+      "description": "환율(USD:KRW)",
+      "unit": "KRW/USD",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "712155",
+        "dataset_id": "67beac7b4963da059bda1b45"
+      },
+      "name": "EX_USD_CNY",
+      "description": "환율(USD:CNY)",
+      "unit": "CNY/USD",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "23698",
+        "dataset_id": "67beac7a4963da059bda1b37"
+      },
+      "name": "Bonds_US_3M",
+      "description": "미국 3개월 만기 국채 금리",
+      "unit": "%",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "29231",
+        "dataset_id": "67beac7a4963da059bda1b37"
+      },
+      "name": "Bonds_CHN_1Y",
+      "description": "중국 1년 만기 국채 금리",
+      "unit": "%",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "29294",
+        "dataset_id": "67beac7a4963da059bda1b37"
+      },
+      "name": "Bonds_KOR_1Y",
+      "description": "한국 1년 만기 국채 금리",
+      "unit": "%",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CK",
+        "dataset_id": "68c90e7b5ca53d5d938cdd98"
+      },
+      "name": "Com_Carbon_Emissions",
+      "description": "ENDEX 탄소배출권 선물",
+      "unit": "USD/t",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        {
+          "column": "volume",
+          "unit": "Contracts"
+        },
+        {
+          "column": "openinterest",
+          "unit": "Contracts"
+        }
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "A02092301",
+        "dataset_id": "69328021455eba93435a27c6"
+      },
+      "name": "Com_Car_Prod_China",
+      "description": "중국 자동차 생산량",
+      "unit": "10,000 Unit(s)",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "151",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_US_housing_starts",
+      "description": "미국 신규주택착공건수",
+      "unit": "1,000 cases",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "99",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_US_existing_home",
+      "description": "미국 기존주택판매건수",
+      "unit": "Million units",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "173",
+        "dataset_id": "69328021455eba93435a27cd"
+      },
+      "name": "Com_Econ_US_ism_pmi",
+      "description": "미국 ISM 제조업 PMI 지수",
+      "unit": "Index",
+      "time_grain": "M",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "SKRPNAPH_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "KNOC_KR_Naphtha_prod",
+      "description": "한국 나프타 생산",
+      "unit": "1000 Barrels",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNGDPYOY_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBSC_CN_GDP_YOY",
+      "description": "중국 GDP YoY",
+      "unit": "%",
+      "time_grain": "Q",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNGDPQOQ_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "NBSC_CN_GDP_QOQ",
+      "description": "중국 GDP QoQ",
+      "unit": "%",
+      "time_grain": "Q",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CPMINDX_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "CFLP_CN_PMI",
+      "description": "중국 제조업 PMI 지수",
+      "unit": "%",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "GRIFPBUS_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "IFO_BSI",
+      "description": "독일 IFO 경기체감지수",
+      "unit": "Index, 2015=100",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "SPX_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "SnP_SPX",
+      "description": "S&P500",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "SHCOMP_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "CSI_SSEC",
+      "description": "중국상해종합지수 SSE Composite",
+      "unit": "Index",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "VIX_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "CBOE_VIX",
+      "description": "Volatility Index",
+      "unit": "%",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "DXY_Curncy",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "ICE_DXY",
+      "description": "달러 인덱스 지수",
+      "unit": "Index, 1973-03 = 100",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CL1_COMB_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "NYMEX_WTI",
+      "description": "WTI",
+      "unit": "1000 Barrels",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "MO1_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "ICE_EUA",
+      "description": "탄소배출권(EUA)",
+      "unit": "1000 Metric Tons",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "NG1_COMB_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "NYMEX_NG",
+      "description": "천연가스",
+      "unit": "10,000 MMBtu",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "EURR002W_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "ECB_MRO",
+      "description": "EU 기준금리",
+      "unit": "%",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "FDTR_Index",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "FED_FFR",
+      "description": "미국 기준금리",
+      "unit": "%",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "XW1_Comdty",
+        "dataset_id": "69c38c4df2f7689012b80a74"
+      },
+      "name": "ICE_NCF",
+      "description": "뉴캐슬 석탄 선물 거래가",
+      "unit": "1000 Metric Tons",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    }
+  ]
+}

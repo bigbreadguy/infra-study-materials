@@ -1,0 +1,282 @@
+{
+    "datasource": {
+        "name": "dpanda_bloomberg",
+        "description": "dpanda steel data ingestion"
+    },
+    "period_column": "logical_date",
+    "period_format": "%Y-%m-%d",
+    "time_grain": "D",
+    "category": {
+        "name": "metal_steel",
+        "category_0": "metal",
+        "category_1": "steel",
+        "description": "금속 - 철"
+    },
+    "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        {
+            "column": "volume",
+            "unit": "Contracts"
+        },
+        {
+            "column": "openinterest",
+            "unit": "Contracts"
+        }
+    ],
+    "metrics": [
+        {
+            "match": {
+                "grain_id": "127_1",
+                "dataset_id": "6883112262403cc5447dce36"
+            },
+            "name": "Com_Steel_Sheet_Scrap_New_A",
+            "description": "판재특수강용 철스크랩 생철A",
+            "unit": "kg",
+            "time_grain": "W",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "7204_1",
+                "dataset_id": "6985f24247c1ab09efdd7061"
+            },
+            "name": "Com_Steel_Scrap_Total_Export_Japan",
+            "description": "일본 철스크랩 전체 수출량",
+            "unit": "kg",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "7204_2",
+                "dataset_id": "6985f24247c1ab09efdd7062"
+            },
+            "name": "Com_Steel_Scrap_Total_Import_Korea",
+            "description": "한국 철스크랩 전체 수입량",
+            "unit": "kg",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "7204_2",
+                "dataset_id": "6985f24247c1ab09efdd705f"
+            },
+            "name": "Com_Steel_Scrap_Total_Import_Turkey",
+            "description": "튀르키예 철스크랩 수입량",
+            "unit": "kg",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "import_7204_8_2_2_5",
+                "dataset_id": "6976cd0c6248db3eaaadaa8d"
+            },
+            "name": "Com_Steel_Scrap_Import_India_Vol",
+            "description": "인도 철스크랩 수입량",
+            "unit": "kg",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "iron_steel_8_1",
+                "dataset_id": "6985f24347c1ab09efdd7063"
+            },
+            "name": "Com_Steel_CrudeSteel_Eaf_Prod_Japan",
+            "description": "일본 전기로 생산량",
+            "unit": "kMT",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "wvstahl_de_electric_steel",
+                "dataset_id": "6985f24347c1ab09efdd7065"
+            },
+            "name": "Com_Steel_CrudeSteel_Eaf_Prod_Germany_WVStahl",
+            "description": "독일 전기로 생산량",
+            "unit": "kMT",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "KOSIS001",
+                "dataset_id": "67beac7b4963da059bda1b3f"
+            },
+            "name": "_ext_KOSIS001",
+            "description": "한국 경기종합지수-건설기성액",
+            "unit": "Index",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "KOSIS159",
+                "dataset_id": "67beac7b4963da059bda1b3f"
+            },
+            "name": "_ext_KOSIS159",
+            "description": "한국 건설업 생산지수",
+            "unit": "Index",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "A060105",
+                "dataset_id": "69328021455eba93435a27c6"
+            },
+            "name": "Com_HousingDev_Investment_Cum_China",
+            "description": "중국 주택 개발 투자액(누적)",
+            "unit": "Billion CNY",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "KOSIS049",
+                "dataset_id": "67beac7b4963da059bda1b3f"
+            },
+            "name": "_ext_KOSIS049",
+            "description": "한국 중공업부문 산업 생산지수",
+            "unit": "Index",
+            "time_grain": "M",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "141_3",
+                "dataset_id": "6883112262403cc5447dce36"
+            },
+            "name": "Com_Steel_Scrap_Inv",
+            "description": "철스크랩 국내 재강사 재고",
+            "unit": "1000t",
+            "time_grain": "W",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "601413",
+                "dataset_id": "67beac7b4963da059bda1b45"
+            },
+            "name": "Com_Iron_Ore",
+            "description": "철광석 선물",
+            "unit": "t",
+            "time_grain": "D",
+            "enabled": true,
+            "measures": [
+                "open",
+                "high",
+                "low",
+                "close"
+            ]
+        },
+        {
+            "match": {
+                "grain_id": "38_2",
+                "dataset_id": "6883112262403cc5447dce36"
+            },
+            "name": "Com_Steel_SD400_Construction_Ref",
+            "description": "철근SD400기준가격",
+            "unit": "kg",
+            "time_grain": "W",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "720370",
+                "dataset_id": "67beac7b4963da059bda1b45"
+            },
+            "name": "Com_HRC_Steel",
+            "description": "열연코일(HRC) 강판 선물",
+            "unit": "t",
+            "time_grain": "D",
+            "enabled": true,
+            "measures": [
+                "open",
+                "high",
+                "low",
+                "close"
+            ]
+        },
+        {
+            "match": {
+                "grain_id": "157_2",
+                "dataset_id": "6883112262403cc5447dce36"
+            },
+            "name": "Com_Steel_Scrap_Import_Japan",
+            "description": "철스크랩 한국 수입가 일본산 H2",
+            "unit": "kg",
+            "time_grain": "W",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "157_3",
+                "dataset_id": "6883112262403cc5447dce36"
+            },
+            "name": "Com_Steel_Scrap_Import_Russia",
+            "description": "철스크랩 한국 수입가 러시아산 A3",
+            "unit": "t",
+            "time_grain": "W",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "157_1",
+                "dataset_id": "6883112262403cc5447dce36"
+            },
+            "name": "Com_Steel_Scrap_Import_USA",
+            "description": "철스크랩 한국 수입가 미국산",
+            "unit": "t",
+            "time_grain": "W",
+            "enabled": true,
+            "measure_column": "value"
+        },
+        {
+            "match": {
+                "grain_id": "C-",
+                "dataset_id": "68c90e7b5ca53d5d938cdd98"
+            },
+            "name": "Com_TR_SteelScrap",
+            "description": "LME 튀르키예 철스크랩 선물",
+            "unit": "USD/t",
+            "time_grain": "D",
+            "enabled": true,
+            "measures": [
+                "open",
+                "high",
+                "low",
+                "close",
+                {
+                    "column": "volume",
+                    "unit": "Contracts"
+                },
+                {
+                    "column": "openinterest",
+                    "unit": "Contracts"
+                }
+            ]
+        }
+    ]
+}

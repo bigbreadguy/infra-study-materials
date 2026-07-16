@@ -1,0 +1,45 @@
+{
+  "scrape": {
+    "recipe": "gacc.commodity",
+    "params": {
+      "commodity": "natural_gas_gaseous",
+      "keyword": "natural gases in gaseous state",
+      "hs6": "271121"
+    }
+  },
+  "datasource": {
+    "name": "gacc",
+    "description": "중국 해관총서(GACC) 월간 주요 수입상품 통계"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "floor_period": "2018-01",
+  "category": {
+    "name": "energy_natural_gas_import",
+    "category_0": "energy",
+    "category_1": "natural_gas",
+    "category_2": "import",
+    "description": "에너지 - 천연가스 - 수입"
+  },
+  "metrics": [
+    {
+      "match": {
+        "commodity": "natural_gas_gaseous"
+      },
+      "measure_column": "current_month_quantity_10kt",
+      "name": "cn_natural_gas_gaseous_imports",
+      "unit": "만톤",
+      "description": "중국 기체천연가스(Natural Gases in Gaseous State) 수입량 (월간)"
+    },
+    {
+      "match": {
+        "commodity": "natural_gas_gaseous"
+      },
+      "measure_column": "current_month_value_kusd",
+      "name": "cn_natural_gas_gaseous_imports_value",
+      "unit": "천USD",
+      "description": "중국 기체천연가스(Natural Gases in Gaseous State) 수입액 (월간)"
+    }
+  ]
+}

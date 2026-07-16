@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "STEO.ZOTOIUS.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "market_macro_us_industrial_production",
+    "category_0": "market_macro",
+    "category_1": "industrial_production",
+    "description": "거시 - 미국 산업생산지수"
+  },
+  "metrics": [
+    {
+      "match": {
+        "seriesId": "ZOTOIUS"
+      },
+      "measure_column": "value",
+      "name": "us_industrial_production",
+      "description": "미국 총 산업생산지수 (월간)",
+      "unit": "Index, 2017=100 (seasonally adjusted)"
+    }
+  ]
+}

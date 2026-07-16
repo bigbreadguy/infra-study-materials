@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "fred.series",
+    "params": {
+      "series_id": "TOTALSA"
+    }
+  },
+  "datasource": {
+    "name": "fred",
+    "description": "Federal Reserve Economic Data (FRED)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "automotive",
+    "category_0": "manufacturing",
+    "category_1": "automotive",
+    "description": "제조업 - 자동차"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series_id": "TOTALSA"
+      },
+      "measure_column": "value",
+      "name": "us_auto_sales",
+      "description": "미국 총 차량 판매량 (계절조정 연율 SAAR, 월별)",
+      "unit": "million units"
+    }
+  ]
+}

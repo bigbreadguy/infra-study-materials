@@ -1,0 +1,348 @@
+{
+  "scrape": {
+    "recipe": "kosis.series",
+    "params": {
+      "org_id": "127",
+      "tbl_id": "DT_092_115_2009_S023",
+      "itm_id": "13103131003T1+",
+      "obj_l1": "13102131003A.AF11100000 13102131003A.AF11110000 13102131003A.AF11111000 13102131003A.AF11111100 13102131003A.AF11111200 13102131003A.AF11111300 13102131003A.AF11111400 13102131003A.AF11111500 13102131003A.AF11111900 13102131003A.AF11112000 13102131003A.AF11112100 13102131003A.AF11112300 13102131003A.AF11112320 13102131003A.AF11112390 13102131003A.AF11112400 13102131003A.AF11112500 13102131003A.AF11112900 13102131003A.AF11120000 13102131003A.AF11121000 13102131003A.AF11122000 13102131003A.AF11129000 13102131003A.AF11130000 13102131003A.AF11131000 13102131003A.AF11132000 13102131003A.AF11133000 13102131003A.AF11134000 13102131003A.AF11139000 13102131003A.AF11140000 13102131003A.AF11141000 13102131003A.AF11150000 13102131003A.AF11151000 13102131003A.AF11152000"
+    }
+  },
+  "datasource": {
+    "name": "kosis",
+    "description": "KOSIS 국가통계포털"
+  },
+  "period_column": "PRD_DE",
+  "period_format": "%Y%m",
+  "time_grain": "M",
+  "floor_period": "1996-01",
+  "category": {
+    "name": "manufacturing_semiconductor_export",
+    "category_0": "manufacturing",
+    "category_1": "semiconductor",
+    "category_2": "export",
+    "description": "제조업 - 반도체 - 수출"
+  },
+  "metrics": [
+    {
+      "match": {
+        "C1": "13102131003A.AF11100000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_semiconductors_total_af11100000",
+      "description": "한국 반도체 수출액 (월간, 반도체 총계)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11110000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_electronic_integrated_circuits_af11110000",
+      "description": "한국 반도체 수출액 (월간, 전자집적회로)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_memory_semiconductor_af11111000",
+      "description": "한국 반도체 수출액 (월간, 메모리반도체)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111100",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_dram_af11111100",
+      "description": "한국 반도체 수출액 (월간, DRAM)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111200",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_sram_af11111200",
+      "description": "한국 반도체 수출액 (월간, SRAM)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111300",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_flash_memory_af11111300",
+      "description": "한국 반도체 수출액 (월간, Flash 메모리)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111400",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_memory_mcp_af11111400",
+      "description": "한국 반도체 수출액 (월간, 메모리MCP)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111500",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_mcos_af11111500",
+      "description": "한국 반도체 수출액 (월간, 복합부품집적회로 MCOs)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11111900",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_other_memory_af11111900",
+      "description": "한국 반도체 수출액 (월간, 기타 메모리반도체)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_system_semiconductor_af11112000",
+      "description": "한국 반도체 수출액 (월간, 시스템반도체)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112100",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_microcomponent_af11112100",
+      "description": "한국 반도체 수출액 (월간, 마이크로컴포넌트, 1996-2008 계상)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112300",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_analog_ic_af11112300",
+      "description": "한국 반도체 수출액 (월간, 아날로그 IC)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112320",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_hybrid_ic_af11112320",
+      "description": "한국 반도체 수출액 (월간, 하이브리드IC)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112390",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_analog_ic_other_af11112390",
+      "description": "한국 반도체 수출액 (월간, 아날로그 IC 기타)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112400",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_mcp_excl_memory_af11112400",
+      "description": "한국 반도체 수출액 (월간, MCP 메모리 MCP 제외)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112500",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_mcos_excl_memory_af11112500",
+      "description": "한국 반도체 수출액 (월간, 복합부품집적회로 메모리 MCOs 제외)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11112900",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_other_digital_ic_af11112900",
+      "description": "한국 반도체 수출액 (월간, 기타 디지털 IC)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11120000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_discrete_semiconductor_af11120000",
+      "description": "한국 반도체 수출액 (월간, 개별소자반도체)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11121000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_diode_af11121000",
+      "description": "한국 반도체 수출액 (월간, 다이오드)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11122000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_transistor_af11122000",
+      "description": "한국 반도체 수출액 (월간, 트랜지스터)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11129000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_other_discrete_af11129000",
+      "description": "한국 반도체 수출액 (월간, 기타반도체개별소자)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11130000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_optoelectronics_af11130000",
+      "description": "한국 반도체 수출액 (월간, 광전자)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11131000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_light_emitting_device_af11131000",
+      "description": "한국 반도체 수출액 (월간, 발광소자)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11132000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_light_receiving_device_af11132000",
+      "description": "한국 반도체 수출액 (월간, 수광소자)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11133000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_image_sensor_af11133000",
+      "description": "한국 반도체 수출액 (월간, 이미지센서)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11134000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_photosensitive_device_af11134000",
+      "description": "한국 반도체 수출액 (월간, 감광성반도체소자)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11139000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_other_optoelectronics_af11139000",
+      "description": "한국 반도체 수출액 (월간, 기타광전자)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11140000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_silicon_wafer_af11140000",
+      "description": "한국 반도체 수출액 (월간, 실리콘웨이퍼)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11141000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_silicon_wafer_af11141000",
+      "description": "한국 반도체 수출액 (월간, 실리콘웨이퍼 세부)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11150000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_semiconductor_parts_af11150000",
+      "description": "한국 반도체 수출액 (월간, 반도체부품)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11151000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_analog_digital_ic_parts_af11151000",
+      "description": "한국 반도체 수출액 (월간, 아날로그IC 디지털 IC 부품)",
+      "unit": "USD"
+    },
+    {
+      "match": {
+        "C1": "13102131003A.AF11152000",
+        "ITM_ID": "13103131003T1"
+      },
+      "measure_column": "DT",
+      "name": "semiconductor_export_discrete_semiconductor_parts_af11152000",
+      "description": "한국 반도체 수출액 (월간, 개별소자반도체 부품)",
+      "unit": "USD"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "scrape": {
+    "recipe": "yfinance.history",
+    "params": {
+      "symbol": "RUB=X",
+      "value_field": "usd_rub_exchange_rate"
+    }
+  },
+  "datasource": {
+    "name": "yfinance",
+    "description": "Yahoo Finance"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "floor_date": "2003-12-01",
+  "category": {
+    "name": "exchange_rate",
+    "category_0": "market_macro",
+    "category_1": "fx",
+    "description": "환율"
+  },
+  "metrics": [
+    {
+      "match": {
+        "symbol": "RUB=X"
+      },
+      "measure_column": "usd_rub_exchange_rate",
+      "name": "fx_rub_close",
+      "description": "USD/RUB 환율 (일별 종가)",
+      "unit": "RUB/USD"
+    }
+  ]
+}

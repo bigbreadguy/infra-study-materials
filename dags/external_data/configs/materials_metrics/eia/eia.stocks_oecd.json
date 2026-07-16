@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "STEO.PASC_OECD_T3.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_intl_inventory",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 국제 재고",
+    "category_2": "international_inventory"
+  },
+  "metrics": [
+    {
+      "match": {
+        "seriesId": "PASC_OECD_T3"
+      },
+      "measure_column": "value",
+      "name": "stocks_oecd",
+      "description": "OECD 상업 원유 및 기타 액체연료 재고 (월간)",
+      "unit": "million barrels, end-of-period"
+    }
+  ]
+}

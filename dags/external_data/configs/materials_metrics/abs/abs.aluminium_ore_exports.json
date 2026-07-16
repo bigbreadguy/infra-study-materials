@@ -1,0 +1,27 @@
+{
+  "datasource": {
+    "name": "abs",
+    "description": "호주 통계청(Australian Bureau of Statistics) SDMX 2.1 데이터 API"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "metals_aluminum_ore_export",
+    "category_0": "metals",
+    "category_1": "aluminum",
+    "category_2": "ore_export",
+    "description": "금속 - 알루미늄 - 광석 수출"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "MERCH_EXP_285_TOT_TOT_M"
+      },
+      "measure_column": "value",
+      "name": "au_aluminium_ore_exports",
+      "description": "호주 보크사이트 수출액",
+      "unit": "AUD"
+    }
+  ]
+}

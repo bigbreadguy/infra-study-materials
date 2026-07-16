@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "fred.series",
+    "params": {
+      "series_id": "TRFVOLUSM227SFWA"
+    }
+  },
+  "datasource": {
+    "name": "fred",
+    "description": "Federal Reserve Economic Data (FRED)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "automotive",
+    "category_0": "manufacturing",
+    "category_1": "automotive",
+    "description": "제조업 - 자동차"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series_id": "TRFVOLUSM227SFWA"
+      },
+      "measure_column": "value",
+      "name": "us_vehicle_miles_traveled",
+      "description": "미국 차량 주행거리 (계절조정 SA, 월별)",
+      "unit": "million miles"
+    }
+  ]
+}

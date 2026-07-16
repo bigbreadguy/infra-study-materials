@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "fred.series",
+    "params": {
+      "series_id": "DFII10"
+    }
+  },
+  "datasource": {
+    "name": "fred",
+    "description": "Federal Reserve Economic Data (FRED)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "category": {
+    "name": "interest_rate",
+    "category_0": "market_macro",
+    "category_1": "interest_rate",
+    "description": "시장/매크로 - 금리"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series_id": "DFII10"
+      },
+      "measure_column": "value",
+      "name": "us_tips_real_yield_10y",
+      "description": "미국 10년 물가연동국채 실질금리 (TIPS, 일별)",
+      "unit": "%"
+    }
+  ]
+}

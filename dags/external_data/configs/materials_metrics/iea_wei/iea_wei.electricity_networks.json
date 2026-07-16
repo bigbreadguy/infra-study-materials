@@ -1,0 +1,38 @@
+{
+  "datasource": {
+    "name": "iea_wei",
+    "description": "IEA World Energy Investment data file (annual, manual upload)"
+  },
+  "period_column": "year",
+  "period_format": "%Y",
+  "time_grain": "Y",
+  "category": {
+    "name": "energy_investment_power_grid",
+    "category_0": "energy",
+    "category_1": "investment",
+    "category_2": "electricity_networks",
+    "description": "에너지 - 투자 - 전력망"
+  },
+  "metrics": [
+    {
+      "match": {
+        "region": "World",
+        "metric": "Electricity networks"
+      },
+      "measure_column": "value",
+      "name": "iea_world_electricity_networks_investment",
+      "description": "세계 전력망 투자액 (연간, 2024년 불변 USD, 시장환율)",
+      "unit": "Billion USD (2024, MER)"
+    },
+    {
+      "match": {
+        "region": "China",
+        "metric": "Electricity networks"
+      },
+      "measure_column": "value",
+      "name": "iea_china_electricity_networks_investment",
+      "description": "중국 전력망 투자액 (연간, 2024년 불변 USD, 시장환율)",
+      "unit": "Billion USD (2024, MER)"
+    }
+  ]
+}

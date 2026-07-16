@@ -1,0 +1,27 @@
+{
+  "datasource": {
+    "name": "estat",
+    "description": "e-Stat (Japan official statistics portal)"
+  },
+  "period_column": "time",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_import",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "category_2": "import",
+    "description": "에너지 - 석유 - 수입"
+  },
+  "metrics": [
+    {
+      "match": {
+        "cat01": "200"
+      },
+      "measure_column": "value",
+      "name": "jp_kerosene_imports",
+      "description": "일본 등유(난방유) 수입량 (월간)",
+      "unit": "kl"
+    }
+  ]
+}

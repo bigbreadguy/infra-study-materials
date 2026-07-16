@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "fred.series",
+    "params": {
+      "series_id": "T5YIFR"
+    }
+  },
+  "datasource": {
+    "name": "fred",
+    "description": "Federal Reserve Economic Data (FRED)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "category": {
+    "name": "inflation_expectation",
+    "category_0": "market_macro",
+    "category_1": "inflation",
+    "description": "시장/매크로 - 기대인플레이션"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series_id": "T5YIFR"
+      },
+      "measure_column": "value",
+      "name": "us_inflation_expectation_5y5y",
+      "description": "미국 5년후 5년 기대인플레이션 (5Y5Y, 일별)",
+      "unit": "%"
+    }
+  ]
+}

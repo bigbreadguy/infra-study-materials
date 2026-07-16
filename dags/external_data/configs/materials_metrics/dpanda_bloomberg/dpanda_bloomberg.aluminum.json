@@ -1,0 +1,267 @@
+{
+  "datasource": {
+    "name": "dpanda_bloomberg",
+    "description": "dpanda Bloomberg market index ingestion"
+  },
+  "period_column": "logical_date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "category": {
+    "name": "metal_aluminum",
+    "category_0": "metal",
+    "category_1": "aluminum",
+    "description": "금속 - 알루미늄"
+  },
+  "metrics": [
+    {
+      "match": {
+        "grain_id": "AACNPO01_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Mysteel_CN_Al2O3_prod",
+      "description": "중국 알루미나 생산량",
+      "unit": "10kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "IPAINAME_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "IAl_NA_Al_prod",
+      "description": "북미 알루미늄 생산량",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "EACNPR01_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "Mysteel_CN_Al_prod",
+      "description": "중국 알루미늄 생산량",
+      "unit": "10kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "IPAITOTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "IAl_Global_Al_prod",
+      "description": "전세계 알루미늄 생산량",
+      "unit": "kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "BXCIIQTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "GACC_CN_Bauxite_import",
+      "description": "중국 보크사이트(bauxite) 수입량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "RALCIQTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "GACC_CN_Refined_Al_prod",
+      "description": "중국 정련알루미늄 수입량",
+      "unit": "MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "AACNST01_Index",
+        "dataset_id": "69c38c4df2f7689012b80a75"
+      },
+      "name": "IAl_CN_Al2O3_inv",
+      "description": "중국 알루미나 항구 재고량",
+      "unit": "10kMT",
+      "time_grain": "D",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CAWIIQTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "GACC_CN_Al_PIR_Scrap_import",
+      "description": "중국 알루미늄 폐기물 및 스크랩 수입량",
+      "unit": "USD/MT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "CNEVAUMA_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "GACC_CN_Al2O3_export",
+      "description": "중국 알루미늄 산화물 수출량",
+      "unit": "Thousand Tonnes",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    },
+    {
+      "match": {
+        "grain_id": "aluminium_cash_offer",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Al_Cash",
+      "description": "LME 알루미늄 현물 매도호가",
+      "unit": "t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "aluminium_total_prod",
+        "dataset_id": "693fb256455eba93435b82fd"
+      },
+      "name": "Com_Aluminium_Total_Prod_RioTinto",
+      "description": "Rio Tinto 알루미늄 생산량",
+      "unit": "kMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "bauxite_total_prod",
+        "dataset_id": "693fb256455eba93435b82fd"
+      },
+      "name": "Com_Bauxite_Total_Prod_RioTinto",
+      "description": "Rio Tinto 보크사이트(bauxite) 생산량",
+      "unit": "kMT",
+      "time_grain": "Q",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "aluminium_opening_stock",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Al_Inv",
+      "description": "LME 알루미늄 재고량",
+      "unit": "t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "aluminium_spread",
+        "dataset_id": "693fb256455eba93435b82ff"
+      },
+      "name": "Com_LME_Al_Spread",
+      "description": "LME 알루미늄 Official Prices 3개월-현물 스프레드",
+      "unit": "t",
+      "time_grain": "D",
+      "enabled": true,
+      "measure_column": "value"
+    },
+    {
+      "match": {
+        "grain_id": "IPAAOCTL_Index",
+        "dataset_id": "69c38c4df2f7689012b80a76"
+      },
+      "name": "IAl_OCA_prod",
+      "description": "오세아니아 알루미나 생산량",
+      "unit": "10kMT",
+      "time_grain": "M",
+      "enabled": true,
+      "measures": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "openinterest"
+      ]
+    }
+  ]
+}

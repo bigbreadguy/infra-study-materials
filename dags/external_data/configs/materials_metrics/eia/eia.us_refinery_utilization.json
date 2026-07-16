@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.WPULEUS3.W"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "category": {
+    "name": "energy_petroleum_us_demand",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 수요",
+    "category_2": "us_demand"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "WPULEUS3"
+      },
+      "measure_column": "value",
+      "name": "us_refinery_utilization",
+      "description": "미국 정제시설 가동률 (주간)",
+      "unit": "%"
+    }
+  ]
+}

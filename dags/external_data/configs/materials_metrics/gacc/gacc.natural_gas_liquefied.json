@@ -1,0 +1,48 @@
+{
+  "scrape": {
+    "recipe": "gacc.commodity",
+    "params": {
+      "commodity": "natural_gas_liquefied",
+      "keyword": "natural gases in liquefied state",
+      "hs6": "271111",
+      "aliases": [
+        "liquefied natural gas"
+      ]
+    }
+  },
+  "datasource": {
+    "name": "gacc",
+    "description": "중국 해관총서(GACC) 월간 주요 수입상품 통계"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "floor_period": "2018-01",
+  "category": {
+    "name": "energy_natural_gas_import",
+    "category_0": "energy",
+    "category_1": "natural_gas",
+    "category_2": "import",
+    "description": "에너지 - 천연가스 - 수입"
+  },
+  "metrics": [
+    {
+      "match": {
+        "commodity": "natural_gas_liquefied"
+      },
+      "measure_column": "current_month_quantity_10kt",
+      "name": "cn_lng_imports",
+      "unit": "만톤",
+      "description": "중국 액화천연가스(Natural Gases in Liquefied State) 수입량 (월간, HS 271111)"
+    },
+    {
+      "match": {
+        "commodity": "natural_gas_liquefied"
+      },
+      "measure_column": "current_month_value_kusd",
+      "name": "cn_lng_imports_value",
+      "unit": "천USD",
+      "description": "중국 액화천연가스(Natural Gases in Liquefied State) 수입액 (월간)"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.W_EPJK_VSD_NUS_DAYS.W"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "category": {
+    "name": "energy_petroleum_us_inventory",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 재고",
+    "category_2": "us_inventory"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "W_EPJK_VSD_NUS_DAYS"
+      },
+      "measure_column": "value",
+      "name": "dos_kerosene",
+      "description": "미국 Kerosene-Type Jet Fuel 재고순환율 - days of supply (주간)",
+      "unit": "DAYS"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "datasource": {
+    "name": "kosa_steeldata",
+    "description": "한국철강협회 STEEL DATA"
+  },
+  "period_column": "시점",
+  "period_format": "%Y.%m",
+  "time_grain": "M",
+  "floor_period": "1991-01",
+  "category": {
+    "name": "metal_heavy_melting_steel_scrap",
+    "category_0": "metal",
+    "category_1": "steel",
+    "category_2": "heavy_melting_scrap",
+    "description": "금속 - 용해용철스크랩"
+  },
+  "metrics": [
+    {
+      "match": {
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "국내구매",
+      "name": "steel_scrap_domestic_purchase_domestic",
+      "description": "용해용철스크랩 국내구매",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "수입구매",
+      "name": "steel_scrap_domestic_purchase_import",
+      "description": "용해용철스크랩 수입구매",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "자가발생구매",
+      "name": "steel_scrap_domestic_purchase_self_generated",
+      "description": "용해용철스크랩 자가발생구매",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "자가소비",
+      "name": "steel_scrap_domestic_self_consumption",
+      "description": "용해용철스크랩 자가소비",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "구매집계",
+      "name": "steel_scrap_domestic_purchase_total",
+      "description": "용해용철스크랩 구매집계",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "당월재고",
+      "name": "steel_scrap_domestic_inventory_month_end",
+      "description": "용해용철스크랩 당월재고",
+      "unit": "천톤"
+    }
+  ]
+}

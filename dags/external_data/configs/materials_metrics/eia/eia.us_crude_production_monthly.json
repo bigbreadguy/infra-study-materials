@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.MCRFPUS2.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_us_supply",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 공급",
+    "category_2": "us_supply"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "MCRFPUS2"
+      },
+      "measure_column": "value",
+      "name": "us_crude_production_monthly",
+      "description": "미국 원유 현장 생산량 (월간)",
+      "unit": "MBBL/D"
+    }
+  ]
+}

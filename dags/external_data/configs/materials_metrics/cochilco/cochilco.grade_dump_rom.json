@@ -1,0 +1,27 @@
+{
+  "datasource": {
+    "name": "cochilco",
+    "description": "칠레 구리위원회(Cochilco) 구리 및 광물 통계 연감"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "Y",
+  "category": {
+    "name": "metals_copper_ore_grade",
+    "category_0": "metals",
+    "category_1": "copper",
+    "category_2": "ore_grade",
+    "description": "금속 - 구리 - 광석 품위"
+  },
+  "metrics": [
+    {
+      "match": {
+        "metric": "grade_dump_rom"
+      },
+      "measure_column": "value",
+      "name": "cl_copper_ore_grade_dump_rom",
+      "description": "칠레 구리 광석 품위 - 덤프/ROM 침출(Lixiviación Dump y/o ROM, 상대적 최저품위) (연간)",
+      "unit": "%"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.MCREXUS2.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_us_supply",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 공급",
+    "category_2": "us_supply"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "MCREXUS2"
+      },
+      "measure_column": "value",
+      "name": "us_crude_exports_monthly",
+      "description": "미국 원유 수출량 (월간)",
+      "unit": "MBBL/D"
+    }
+  ]
+}

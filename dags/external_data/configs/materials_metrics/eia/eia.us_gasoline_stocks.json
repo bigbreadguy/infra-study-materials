@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.WGTSTUS1.W"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "category": {
+    "name": "energy_petroleum_us_inventory",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 재고",
+    "category_2": "us_inventory"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "WGTSTUS1"
+      },
+      "measure_column": "value",
+      "name": "us_gasoline_stocks",
+      "description": "미국 총 휘발유 재고량 (주간)",
+      "unit": "MBBL"
+    }
+  ]
+}

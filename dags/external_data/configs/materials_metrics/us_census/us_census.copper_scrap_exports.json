@@ -1,0 +1,28 @@
+{
+  "datasource": {
+    "name": "us_census",
+    "description": "미국 통계국(US Census Bureau) 국제 무역 통계 (International Trade)"
+  },
+  "period_column": "time",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "metals_copper_scrap_export",
+    "category_0": "metals",
+    "category_1": "copper",
+    "category_2": "scrap_export",
+    "description": "금속 - 구리 - 스크랩 수출"
+  },
+  "metrics": [
+    {
+      "match": {
+        "E_COMMODITY": "740400",
+        "CTY_CODE": "-"
+      },
+      "measure_column": "ALL_VAL_MO",
+      "name": "us_copper_scrap_exports",
+      "description": "미국 구리 스크랩 수출액 - 전세계 합계 (HS 740400, 월간)",
+      "unit": "USD"
+    }
+  ]
+}

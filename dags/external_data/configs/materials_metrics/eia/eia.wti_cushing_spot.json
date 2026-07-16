@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "PET.RWTC.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_price",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 가격",
+    "category_2": "price"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "RWTC"
+      },
+      "measure_column": "value",
+      "name": "wti_cushing_spot",
+      "description": "Cushing, OK WTI 현물가격 (월간)",
+      "unit": "$/BBL"
+    }
+  ]
+}

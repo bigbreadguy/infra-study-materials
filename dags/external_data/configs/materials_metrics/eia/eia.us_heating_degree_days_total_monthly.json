@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "TOTAL.ZWHDPUS.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "weather_us_degree_days",
+    "category_0": "weather",
+    "category_1": "degree_days",
+    "description": "기상 - 미국 도일"
+  },
+  "metrics": [
+    {
+      "match": {
+        "msn": "ZWHDPUS"
+      },
+      "measure_column": "value",
+      "name": "us_heating_degree_days_total_monthly",
+      "description": "미국 난방도일 월간 (Total Energy)",
+      "unit": "total degree days"
+    }
+  ]
+}

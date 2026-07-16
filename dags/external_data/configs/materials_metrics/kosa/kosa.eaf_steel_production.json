@@ -1,0 +1,46 @@
+{
+  "datasource": {
+    "name": "kosa_steeldata",
+    "description": "한국철강협회 STEEL DATA"
+  },
+  "period_column": "시점",
+  "period_format": "%Y.%m",
+  "time_grain": "M",
+  "floor_period": "2000-01",
+  "category": {
+    "name": "metal_eaf_steel",
+    "category_0": "metal",
+    "category_1": "steel",
+    "category_2": "eaf_steel",
+    "description": "금속 - 전기로강"
+  },
+  "metrics": [
+    {
+      "match": {
+        "품목명": "전기로강"
+      },
+      "measure_column": "생산",
+      "name": "eaf_steel_production",
+      "description": "전기로강 생산",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "전기로강"
+      },
+      "measure_column": "출하계",
+      "name": "eaf_steel_shipment_total",
+      "description": "전기로강 출하계",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "전기로강"
+      },
+      "measure_column": "당월재고",
+      "name": "eaf_steel_inventory_month_end",
+      "description": "전기로강 당월재고",
+      "unit": "천톤"
+    }
+  ]
+}

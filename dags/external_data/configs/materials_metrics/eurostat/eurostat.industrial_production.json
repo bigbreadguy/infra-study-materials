@@ -1,0 +1,35 @@
+{
+  "datasource": {
+    "name": "eurostat",
+    "description": "유럽연합 통계청(Eurostat) SDMX 3.0 보급 API"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "market_macro_eu_industrial_production",
+    "category_0": "market_macro",
+    "category_1": "industrial_production",
+    "description": "매크로 - 산업생산"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "sts_inpr_m_EA20_CA_I21"
+      },
+      "measure_column": "value",
+      "name": "eu_industrial_production_ca",
+      "description": "EU 산업생산지수 (CA)",
+      "unit": "index_2021_100"
+    },
+    {
+      "match": {
+        "series": "sts_inpr_m_EA20_SCA_I21"
+      },
+      "measure_column": "value",
+      "name": "eu_industrial_production_ca_sa",
+      "description": "EU 산업생산지수 (CA, SA)",
+      "unit": "index_2021_100"
+    }
+  ]
+}

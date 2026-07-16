@@ -1,0 +1,80 @@
+{
+  "scrape": {
+    "recipe": "cftc.contract",
+    "params": {
+      "code": "085692"
+    }
+  },
+  "datasource": {
+    "name": "cftc",
+    "description": "CFTC 투자자 포지션 보고서 (Commitments of Traders, Legacy Futures-Only)"
+  },
+  "period_column": "report_date_as_yyyy_mm_dd",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "floor_date": "1989-07-01",
+  "category": {
+    "name": "cftc_cot_positioning",
+    "category_0": "market_macro",
+    "category_1": "positioning",
+    "category_2": "cftc_cot",
+    "description": "시장/매크로 - 포지션 - CFTC 투자자 포지션(COT)"
+  },
+  "measures": [
+    {
+      "column": "noncomm_positions_long_all",
+      "suffix": "noncomm_long",
+      "description_suffix": "비상업(투기) 매수 포지션"
+    },
+    {
+      "column": "noncomm_positions_short_all",
+      "suffix": "noncomm_short",
+      "description_suffix": "비상업(투기) 매도 포지션"
+    },
+    {
+      "column": "comm_positions_long_all",
+      "suffix": "comm_long",
+      "description_suffix": "상업(헤지) 매수 포지션"
+    },
+    {
+      "column": "comm_positions_short_all",
+      "suffix": "comm_short",
+      "description_suffix": "상업(헤지) 매도 포지션"
+    },
+    {
+      "column": "tot_rept_positions_long_all",
+      "suffix": "tot_rept_long",
+      "description_suffix": "보고대상 총 매수 포지션"
+    },
+    {
+      "column": "tot_rept_positions_short",
+      "suffix": "tot_rept_short",
+      "description_suffix": "보고대상 총 매도 포지션"
+    },
+    {
+      "column": "nonrept_positions_long_all",
+      "suffix": "nonrept_long",
+      "description_suffix": "비보고(소규모) 매수 포지션"
+    },
+    {
+      "column": "nonrept_positions_short_all",
+      "suffix": "nonrept_short",
+      "description_suffix": "비보고(소규모) 매도 포지션"
+    },
+    {
+      "column": "open_interest_all",
+      "suffix": "open_interest",
+      "description_suffix": "미결제약정(전체)"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "cot_copper",
+      "description": "구리 선물 (COMEX) CFTC 투자자 포지션 (주간)",
+      "unit": "계약",
+      "match": {
+        "commodity": "COPPER"
+      }
+    }
+  ]
+}

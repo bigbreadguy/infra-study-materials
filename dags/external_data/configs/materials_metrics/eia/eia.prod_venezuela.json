@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "STEO.COPR_VE.Q"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "Q",
+  "category": {
+    "name": "energy_petroleum_intl_production",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "category_2": "international_production",
+    "description": "에너지 - 석유 - 국제 생산"
+  },
+  "metrics": [
+    {
+      "match": {
+        "seriesId": "COPR_VE"
+      },
+      "measure_column": "value",
+      "name": "prod_venezuela",
+      "description": "베네수엘라 원유 생산량 (분기)",
+      "unit": "million barrels per day"
+    }
+  ]
+}

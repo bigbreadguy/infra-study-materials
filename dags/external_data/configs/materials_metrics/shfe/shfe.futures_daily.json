@@ -1,0 +1,81 @@
+{
+  "scrape": {
+    "recipe": "shfe.futures_daily",
+    "params": {
+      "product_id": "al"
+    }
+  },
+  "datasource": {
+    "name": "shfe",
+    "description": "상하이선물거래소 (Shanghai Futures Exchange, SHFE)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "floor_date": "2002-01-07",
+  "category": {
+    "name": "shfe_aluminium_futures",
+    "category_0": "commodity",
+    "category_1": "base_metals",
+    "category_2": "aluminium",
+    "description": "원자재 - 비철금속 - 알루미늄 (SHFE 선물)"
+  },
+  "measures": [
+    {
+      "column": "open",
+      "suffix": "open",
+      "unit": "CNY/t",
+      "description_suffix": "시초가"
+    },
+    {
+      "column": "high",
+      "suffix": "high",
+      "unit": "CNY/t",
+      "description_suffix": "고가"
+    },
+    {
+      "column": "low",
+      "suffix": "low",
+      "unit": "CNY/t",
+      "description_suffix": "저가"
+    },
+    {
+      "column": "close",
+      "suffix": "close",
+      "unit": "CNY/t",
+      "description_suffix": "종가"
+    },
+    {
+      "column": "settle",
+      "suffix": "settle",
+      "unit": "CNY/t",
+      "description_suffix": "정산가"
+    },
+    {
+      "column": "volume",
+      "suffix": "volume",
+      "unit": "계약(手)",
+      "description_suffix": "거래량"
+    },
+    {
+      "column": "open_interest",
+      "suffix": "open_interest",
+      "unit": "계약(手)",
+      "description_suffix": "미결제약정"
+    }
+  ],
+  "rank_expansion": {
+    "column": "contract_rank",
+    "count": 13,
+    "description_suffix": "결제월까지 개월 수"
+  },
+  "metrics": [
+    {
+      "name": "shfe_al",
+      "description": "SHFE 알루미늄 선물",
+      "match": {
+        "product_id": "al"
+      }
+    }
+  ]
+}

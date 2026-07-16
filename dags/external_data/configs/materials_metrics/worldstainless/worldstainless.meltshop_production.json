@@ -1,0 +1,72 @@
+{
+  "datasource": {
+    "name": "worldstainless",
+    "description": "worldstainless (worldsteel) 글로벌 스테인리스강 통계"
+  },
+  "period_column": "period_start",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "Q",
+  "category": {
+    "name": "metals_stainless_steel_production",
+    "category_0": "metals",
+    "category_1": "stainless_steel",
+    "category_2": "production",
+    "description": "금속 - 스테인리스강 - 생산"
+  },
+  "metrics": [
+    {
+      "match": {
+        "region": "Asia"
+      },
+      "measure_column": "production_kt",
+      "name": "asia_stainless_steel_meltshop_production",
+      "description": "아시아 스테인리스강 조강 생산량 (분기)",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "region": "China"
+      },
+      "measure_column": "production_kt",
+      "name": "cn_stainless_steel_meltshop_production",
+      "description": "중국 스테인리스강 조강 생산량 (분기)",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "region": "European Union"
+      },
+      "measure_column": "production_kt",
+      "name": "eu_stainless_steel_meltshop_production",
+      "description": "유럽연합 스테인리스강 조강 생산량 (분기)",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "region": "United States"
+      },
+      "measure_column": "production_kt",
+      "name": "us_stainless_steel_meltshop_production",
+      "description": "미국 스테인리스강 조강 생산량 (분기)",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "region": "Others"
+      },
+      "measure_column": "production_kt",
+      "name": "others_stainless_steel_meltshop_production",
+      "description": "기타 지역 스테인리스강 조강 생산량 (분기)",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "region": "Total"
+      },
+      "measure_column": "production_kt",
+      "name": "world_stainless_steel_meltshop_production",
+      "description": "전세계 스테인리스강 조강 생산량 (분기)",
+      "unit": "천톤"
+    }
+  ]
+}

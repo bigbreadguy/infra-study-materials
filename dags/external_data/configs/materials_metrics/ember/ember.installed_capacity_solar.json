@@ -1,0 +1,35 @@
+{
+  "scrape": {
+    "recipe": "ember.installed_capacity",
+    "params": {
+      "is_aggregate_series": false,
+      "series": "Solar"
+    }
+  },
+  "datasource": {
+    "name": "ember",
+    "description": "Ember 글로벌 전력 데이터 (Ember Energy API)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_renewable_capacity",
+    "category_0": "energy",
+    "category_1": "renewable",
+    "category_2": "installed_capacity",
+    "description": "에너지 - 재생에너지 - 설치량"
+  },
+  "metrics": [
+    {
+      "match": {
+        "entity": "World",
+        "series": "Solar"
+      },
+      "measure_column": "capacity_gw",
+      "name": "global_solar_installed_capacity",
+      "description": "전세계 태양광 설치량 (월간)",
+      "unit": "GW"
+    }
+  ]
+}

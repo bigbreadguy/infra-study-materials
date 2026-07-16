@@ -1,0 +1,491 @@
+{
+  "datasource": {
+    "name": "cssc",
+    "description": "中国不锈钢协会(CSSC) 세관 수출입 통계 - 스테인리스강 및 주요 원료"
+  },
+  "period_column": "logical_date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "metals_nickel_import",
+    "category_0": "metals",
+    "category_1": "nickel",
+    "category_2": "import",
+    "description": "금속 - 니켈 - 수입"
+  },
+  "metrics": [
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "stainless_steel",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_stainless_steel_imports",
+      "description": "중국 스테인리스강 수입량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_import",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "import",
+        "description": "금속 - 스테인리스강 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "stainless_steel",
+        "flow": "exports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_stainless_steel_exports",
+      "description": "중국 스테인리스강 수출량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_export",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "export",
+        "description": "금속 - 스테인리스강 - 수출"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "stainless_steel",
+        "flow": "net_exports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_stainless_steel_net_exports",
+      "description": "중국 스테인리스강 순수출량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_net_export",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "net_export",
+        "description": "금속 - 스테인리스강 - 순수출"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "nickel_ore",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_nickel_ore_imports_total",
+      "description": "중국 니켈광 수입량 - 합계 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "nickel_ore",
+        "flow": "imports",
+        "country": "philippines",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_nickel_ore_imports_philippines",
+      "description": "중국 니켈광 수입량 - 필리핀 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "nickel_ore",
+        "flow": "imports",
+        "country": "australia",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_nickel_ore_imports_australia",
+      "description": "중국 니켈광 수입량 - 호주 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "ferronickel",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_ferronickel_imports_total",
+      "description": "중국 페로니켈 수입량 - 합계 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "ferronickel",
+        "flow": "imports",
+        "country": "indonesia",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_ferronickel_imports_indonesia",
+      "description": "중국 페로니켈 수입량 - 인도네시아 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "refined_nickel",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_refined_nickel_imports_total",
+      "description": "중국 정련니켈 수입량 - 합계 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "refined_nickel",
+        "flow": "imports",
+        "country": "russia",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_refined_nickel_imports_russia",
+      "description": "중국 정련니켈 수입량 - 러시아 (월간)",
+      "unit": "만톤"
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "refined_nickel",
+        "flow": "exports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_refined_nickel_exports_total",
+      "description": "중국 정련니켈 수출량 - 합계 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_nickel_export",
+        "category_0": "metals",
+        "category_1": "nickel",
+        "category_2": "export",
+        "description": "금속 - 니켈 - 수출"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "chromium_ore",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_chromium_ore_imports_total",
+      "description": "중국 크롬광 수입량 - 합계 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_chromium_import",
+        "category_0": "metals",
+        "category_1": "chromium",
+        "category_2": "import",
+        "description": "금속 - 크롬 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "chromium_ore",
+        "flow": "imports",
+        "country": "south_africa",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_chromium_ore_imports_south_africa",
+      "description": "중국 크롬광 수입량 - 남아프리카공화국 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_chromium_import",
+        "category_0": "metals",
+        "category_1": "chromium",
+        "category_2": "import",
+        "description": "금속 - 크롬 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "ferrochrome",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_ferrochrome_imports_total",
+      "description": "중국 페로크롬 수입량 - 합계 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_chromium_import",
+        "category_0": "metals",
+        "category_1": "chromium",
+        "category_2": "import",
+        "description": "금속 - 크롬 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "ferrochrome",
+        "flow": "imports",
+        "country": "south_africa",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_ferrochrome_imports_south_africa",
+      "description": "중국 페로크롬 수입량 - 남아프리카공화국 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_chromium_import",
+        "category_0": "metals",
+        "category_1": "chromium",
+        "category_2": "import",
+        "description": "금속 - 크롬 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "manganese_ore",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_manganese_ore_imports_total",
+      "description": "중국 망간광 수입량 - 합계 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_manganese_import",
+        "category_0": "metals",
+        "category_1": "manganese",
+        "category_2": "import",
+        "description": "금속 - 망간 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "manganese_ore",
+        "flow": "imports",
+        "country": "south_africa",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_manganese_ore_imports_south_africa",
+      "description": "중국 망간광 수입량 - 남아프리카공화국 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_manganese_import",
+        "category_0": "metals",
+        "category_1": "manganese",
+        "category_2": "import",
+        "description": "금속 - 망간 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "manganese_ore",
+        "flow": "imports",
+        "country": "australia",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_manganese_ore_imports_australia",
+      "description": "중국 망간광 수입량 - 호주 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_manganese_import",
+        "category_0": "metals",
+        "category_1": "manganese",
+        "category_2": "import",
+        "description": "금속 - 망간 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "molybdenum_ore",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_molybdenum_ore_imports_total",
+      "description": "중국 몰리브덴광 수입량 - 합계 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_molybdenum_import",
+        "category_0": "metals",
+        "category_1": "molybdenum",
+        "category_2": "import",
+        "description": "금속 - 몰리브덴 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "china",
+        "commodity": "stainless_steel_scrap",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "cn_stainless_steel_scrap_imports_total",
+      "description": "중국 스테인리스강 스크랩 수입량 - 합계 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_scrap_import",
+        "category_0": "metals",
+        "category_1": "stainless_steel_scrap",
+        "category_2": "import",
+        "description": "금속 - 스테인리스강 스크랩 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "japan",
+        "commodity": "stainless_steel",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "jp_stainless_steel_imports",
+      "description": "일본 스테인리스강 수입량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_import",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "import",
+        "description": "금속 - 스테인리스강 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "japan",
+        "commodity": "stainless_steel",
+        "flow": "exports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "jp_stainless_steel_exports",
+      "description": "일본 스테인리스강 수출량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_export",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "export",
+        "description": "금속 - 스테인리스강 - 수출"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "taiwan",
+        "commodity": "stainless_steel",
+        "flow": "imports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "tw_stainless_steel_imports",
+      "description": "대만 스테인리스강 수입량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_import",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "import",
+        "description": "금속 - 스테인리스강 - 수입"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "taiwan",
+        "commodity": "stainless_steel",
+        "flow": "exports",
+        "country": "total",
+        "scope": "monthly"
+      },
+      "measure_column": "volume",
+      "name": "tw_stainless_steel_exports",
+      "description": "대만 스테인리스강 수출량 (월간)",
+      "unit": "만톤",
+      "category": {
+        "name": "metals_stainless_steel_export",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "export",
+        "description": "금속 - 스테인리스강 - 수출"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "global",
+        "commodity": "stainless_steel",
+        "flow": "exports",
+        "country": "total",
+        "scope": "cumulative"
+      },
+      "measure_column": "volume",
+      "name": "global_stainless_steel_exports",
+      "description": "전세계 스테인리스강 수출량 (연간)",
+      "unit": "만톤",
+      "time_grain": "Y",
+      "category": {
+        "name": "metals_stainless_steel_export",
+        "category_0": "metals",
+        "category_1": "stainless_steel",
+        "category_2": "export",
+        "description": "금속 - 스테인리스강 - 수출"
+      }
+    },
+    {
+      "match": {
+        "reporting_country": "global",
+        "commodity": "stainless_steel_scrap",
+        "flow": "exports",
+        "country": "total",
+        "scope": "cumulative"
+      },
+      "measure_column": "volume",
+      "name": "global_stainless_steel_scrap_exports",
+      "description": "전세계 스테인리스강 스크랩 수출량 (연간)",
+      "unit": "만톤",
+      "time_grain": "Y",
+      "category": {
+        "name": "metals_stainless_steel_scrap_export",
+        "category_0": "metals",
+        "category_1": "stainless_steel_scrap",
+        "category_2": "export",
+        "description": "금속 - 스테인리스강 스크랩 - 수출"
+      }
+    }
+  ]
+}

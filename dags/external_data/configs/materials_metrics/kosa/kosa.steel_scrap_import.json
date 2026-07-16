@@ -1,0 +1,52 @@
+{
+  "datasource": {
+    "name": "kosa_steeldata",
+    "description": "한국철강협회 STEEL DATA"
+  },
+  "period_column": "시점",
+  "period_format": "%Y.%m",
+  "time_grain": "M",
+  "floor_period": "2001-01",
+  "category": {
+    "name": "metal_heavy_melting_steel_scrap",
+    "category_0": "metal",
+    "category_1": "steel",
+    "category_2": "heavy_melting_scrap",
+    "description": "금속 - 용해용철스크랩"
+  },
+  "metrics": [
+    {
+      "match": {
+        "국가": "일본",
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "국내수입 물량",
+      "previous_year_column": "전년 물량",
+      "name": "steel_scrap_import_from_japan_volume",
+      "description": "용해용철스크랩 일본 국내수입 물량",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "국가": "일본",
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "국내수입 금액",
+      "previous_year_column": "전년 금액",
+      "name": "steel_scrap_import_from_japan_amount",
+      "description": "용해용철스크랩 일본 국내수입 금액",
+      "unit": "천$"
+    },
+    {
+      "match": {
+        "국가": "일본",
+        "품목명": "용해용철스크랩"
+      },
+      "measure_column": "국내수입 평균단가",
+      "previous_year_column": "전년 평균단가",
+      "name": "steel_scrap_import_from_japan_unit_price",
+      "description": "용해용철스크랩 일본 국내수입 평균단가",
+      "unit": "$/톤"
+    }
+  ]
+}

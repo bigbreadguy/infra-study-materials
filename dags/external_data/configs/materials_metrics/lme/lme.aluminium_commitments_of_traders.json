@@ -1,0 +1,65 @@
+{
+  "datasource": {
+    "name": "lme",
+    "description": "런던금속거래소 (London Metal Exchange, LME)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "W",
+  "floor_date": "2020-01-03",
+  "category": {
+    "name": "lme_cot_positioning",
+    "category_0": "market_macro",
+    "category_1": "positioning",
+    "category_2": "lme_cot",
+    "description": "시장/매크로 - 포지션 - LME 투자자 포지션(MiFID COT)"
+  },
+  "metrics": [
+    {
+      "name": "cot_lme_aluminium",
+      "description": "LME 알루미늄 선물 투자자 포지션 (MiFID COT, 주간, 기준일 금요일)",
+      "unit": "로트",
+      "match": {
+        "metal": "aluminium",
+        "category": "market_summary"
+      },
+      "measures": [
+        {
+          "column": "commercial_long",
+          "suffix": "commercial_long",
+          "description_suffix": "상업 롱 포지션(Commercial Undertakings)"
+        },
+        {
+          "column": "commercial_short",
+          "suffix": "commercial_short",
+          "description_suffix": "상업 숏 포지션(Commercial Undertakings)"
+        },
+        {
+          "column": "commercial_net",
+          "suffix": "commercial_net",
+          "description_suffix": "상업 순 포지션 (매수-매도)"
+        },
+        {
+          "column": "investment_funds_long",
+          "suffix": "investment_funds_long",
+          "description_suffix": "비상업(Investment Funds) 롱 포지션"
+        },
+        {
+          "column": "investment_funds_short",
+          "suffix": "investment_funds_short",
+          "description_suffix": "비상업(Investment Funds) 숏 포지션"
+        },
+        {
+          "column": "investment_funds_net",
+          "suffix": "investment_funds_net",
+          "description_suffix": "비상업 순 포지션 (매수-매도)"
+        },
+        {
+          "column": "open_interest",
+          "suffix": "open_interest",
+          "description_suffix": "미결제약정 (전체 5개 투자자군 총 매수 합계)"
+        }
+      ]
+    }
+  ]
+}

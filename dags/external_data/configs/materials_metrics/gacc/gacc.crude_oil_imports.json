@@ -1,0 +1,45 @@
+{
+  "scrape": {
+    "recipe": "gacc.commodity",
+    "params": {
+      "commodity": "crude_petroleum",
+      "keyword": "crude petroleum",
+      "hs6": "270900"
+    }
+  },
+  "datasource": {
+    "name": "gacc",
+    "description": "중국 해관총서(GACC) 월간 주요 수입상품 통계"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "floor_period": "2018-01",
+  "category": {
+    "name": "energy_crude_oil_import",
+    "category_0": "energy",
+    "category_1": "crude_oil",
+    "category_2": "import",
+    "description": "에너지 - 원유 - 수입"
+  },
+  "metrics": [
+    {
+      "match": {
+        "commodity": "crude_petroleum"
+      },
+      "measure_column": "current_month_quantity_10kt",
+      "name": "cn_crude_oil_imports",
+      "unit": "만톤",
+      "description": "중국 원유 수입량 (월간, HS 270900)"
+    },
+    {
+      "match": {
+        "commodity": "crude_petroleum"
+      },
+      "measure_column": "current_month_value_kusd",
+      "name": "cn_crude_oil_imports_value",
+      "unit": "천USD",
+      "description": "중국 원유 수입액 (월간, HS 270900)"
+    }
+  ]
+}

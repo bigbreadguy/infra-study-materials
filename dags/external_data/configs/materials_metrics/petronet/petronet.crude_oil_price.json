@@ -1,0 +1,55 @@
+{
+  "datasource": {
+    "name": "petronet",
+    "description": "한국석유공사 PETRONET 국제유가 정보"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "floor_date": "1996-01-01",
+  "category": {
+    "name": "energy_petroleum_price",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "category_2": "price",
+    "description": "에너지 - 석유 - 가격"
+  },
+  "metrics": [
+    {
+      "match": {
+        "product": "Dubai"
+      },
+      "measure_column": "price_usd_bbl",
+      "name": "dubai_crude_price",
+      "description": "두바이 국제 원유가격 (일별)",
+      "unit": "$/BBL"
+    },
+    {
+      "match": {
+        "product": "Brent"
+      },
+      "measure_column": "price_usd_bbl",
+      "name": "brent_crude_price",
+      "description": "브렌트유 (ICE) 국제 원유가격 (일별)",
+      "unit": "$/BBL"
+    },
+    {
+      "match": {
+        "product": "WTI"
+      },
+      "measure_column": "price_usd_bbl",
+      "name": "wti_crude_price",
+      "description": "WTI (NYMEX) 국제 원유가격 (일별)",
+      "unit": "$/BBL"
+    },
+    {
+      "match": {
+        "product": "Oman"
+      },
+      "measure_column": "price_usd_bbl",
+      "name": "oman_crude_price",
+      "description": "오만 국제 원유가격 (일별)",
+      "unit": "$/BBL"
+    }
+  ]
+}

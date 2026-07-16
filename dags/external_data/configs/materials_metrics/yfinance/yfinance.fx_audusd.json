@@ -1,0 +1,34 @@
+{
+  "scrape": {
+    "recipe": "yfinance.history",
+    "params": {
+      "symbol": "AUDUSD=X",
+      "value_field": "aud_usd_exchange_rate"
+    }
+  },
+  "datasource": {
+    "name": "yfinance",
+    "description": "Yahoo Finance"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "floor_date": "2006-05-01",
+  "category": {
+    "name": "exchange_rate",
+    "category_0": "market_macro",
+    "category_1": "fx",
+    "description": "환율"
+  },
+  "metrics": [
+    {
+      "match": {
+        "symbol": "AUDUSD=X"
+      },
+      "measure_column": "aud_usd_exchange_rate",
+      "name": "fx_audusd_close",
+      "description": "AUD/USD 환율 (일별 종가)",
+      "unit": "USD/AUD"
+    }
+  ]
+}

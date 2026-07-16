@@ -1,0 +1,26 @@
+{
+  "datasource": {
+    "name": "gscpi",
+    "description": "FRBNY GSCPI (Global Supply Chain Pressure Index)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "supply_chain_pressure",
+    "category_0": "market_macro",
+    "category_1": "supply_chain",
+    "description": "글로벌 공급망 압력 지수"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series": "GSCPI"
+      },
+      "measure_column": "value",
+      "name": "gscpi_pressure_index",
+      "description": "글로벌 공급망 압력 지수 (월별, 표준편차)",
+      "unit": "std_dev"
+    }
+  ]
+}

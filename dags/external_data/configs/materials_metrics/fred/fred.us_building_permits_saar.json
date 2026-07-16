@@ -1,0 +1,32 @@
+{
+  "scrape": {
+    "recipe": "fred.series",
+    "params": {
+      "series_id": "PERMIT"
+    }
+  },
+  "datasource": {
+    "name": "fred",
+    "description": "Federal Reserve Economic Data (FRED)"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "category": {
+    "name": "construction_us_housing",
+    "category_0": "construction",
+    "category_1": "housing",
+    "description": "건설 - 주택"
+  },
+  "metrics": [
+    {
+      "match": {
+        "series_id": "PERMIT"
+      },
+      "measure_column": "value",
+      "name": "us_building_permits_saar",
+      "description": "미국 건축승인건수 (New Privately-Owned Housing Units Authorized by Building Permits, 계절조정 연율 SAAR, 월별)",
+      "unit": "thousand units"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "TOTAL.PATCPUS.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_petroleum_us_inventory",
+    "category_0": "energy",
+    "category_1": "petroleum",
+    "description": "에너지 - 석유 - 미국 재고",
+    "category_2": "us_inventory"
+  },
+  "metrics": [
+    {
+      "match": {
+        "msn": "PATCPUS"
+      },
+      "measure_column": "value",
+      "name": "stocks_petroleum_products",
+      "description": "미국 석유제품 공급량 - 소비량 (월간)",
+      "unit": "Thousand Barrels per Day"
+    }
+  ]
+}

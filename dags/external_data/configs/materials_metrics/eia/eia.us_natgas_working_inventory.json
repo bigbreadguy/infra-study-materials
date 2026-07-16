@@ -1,0 +1,33 @@
+{
+  "scrape": {
+    "recipe": "eia.series",
+    "params": {
+      "series_id": "STEO.NGWGPUS.M"
+    }
+  },
+  "datasource": {
+    "name": "eia",
+    "description": "U.S. Energy Information Administration (EIA)"
+  },
+  "period_column": "period",
+  "period_format": "%Y-%m",
+  "time_grain": "M",
+  "category": {
+    "name": "energy_natural_gas_us",
+    "category_0": "energy",
+    "category_1": "natural_gas",
+    "description": "에너지 - 천연가스 - 미국",
+    "category_2": "us"
+  },
+  "metrics": [
+    {
+      "match": {
+        "seriesId": "NGWGPUS"
+      },
+      "measure_column": "value",
+      "name": "us_natgas_working_inventory",
+      "description": "미국 working natural gas inventory 재고량 (월간)",
+      "unit": "billion cubic feet, end-of-period"
+    }
+  ]
+}

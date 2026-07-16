@@ -1,0 +1,44 @@
+{
+  "scrape": {
+    "recipe": "gacc.commodity",
+    "params": {
+      "commodity": "naphtha",
+      "keyword": "naphtha"
+    }
+  },
+  "datasource": {
+    "name": "gacc",
+    "description": "중국 해관총서(GACC) 월간 주요 수입상품 통계"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "M",
+  "floor_period": "2020-02",
+  "category": {
+    "name": "energy_petroleum_products_import",
+    "category_0": "energy",
+    "category_1": "petroleum_products",
+    "category_2": "import",
+    "description": "에너지 - 석유제품 - 수입"
+  },
+  "metrics": [
+    {
+      "match": {
+        "commodity": "naphtha"
+      },
+      "measure_column": "current_month_quantity_10kt",
+      "name": "cn_naphtha_imports",
+      "unit": "만톤",
+      "description": "중국 나프타 수입량 (월간)"
+    },
+    {
+      "match": {
+        "commodity": "naphtha"
+      },
+      "measure_column": "current_month_value_kusd",
+      "name": "cn_naphtha_imports_value",
+      "unit": "천USD",
+      "description": "중국 나프타 수입액 (월간)"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "datasource": {
+    "name": "kosa_steeldata",
+    "description": "한국철강협회 STEEL DATA"
+  },
+  "period_column": "시점",
+  "period_format": "%Y.%m",
+  "time_grain": "M",
+  "floor_period": "2000-01",
+  "category": {
+    "name": "metal_long_products",
+    "category_0": "metal",
+    "category_1": "steel",
+    "category_2": "long_products",
+    "description": "금속 - 형강/봉강/철근"
+  },
+  "metrics": [
+    {
+      "match": {
+        "품목명": "형강"
+      },
+      "measure_column": "생산",
+      "name": "long_products_section_steel_production",
+      "description": "형강 생산",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "형강"
+      },
+      "measure_column": "출하계",
+      "name": "long_products_section_steel_shipment_total",
+      "description": "형강 출하계",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "형강"
+      },
+      "measure_column": "당월재고",
+      "name": "long_products_section_steel_inventory_month_end",
+      "description": "형강 당월재고",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "봉강"
+      },
+      "measure_column": "생산",
+      "name": "long_products_bar_production",
+      "description": "봉강 생산",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "봉강"
+      },
+      "measure_column": "출하계",
+      "name": "long_products_bar_shipment_total",
+      "description": "봉강 출하계",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "봉강"
+      },
+      "measure_column": "당월재고",
+      "name": "long_products_bar_inventory_month_end",
+      "description": "봉강 당월재고",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "철근"
+      },
+      "measure_column": "생산",
+      "name": "long_products_rebar_production",
+      "description": "철근 생산",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "철근"
+      },
+      "measure_column": "출하계",
+      "name": "long_products_rebar_shipment_total",
+      "description": "철근 출하계",
+      "unit": "천톤"
+    },
+    {
+      "match": {
+        "품목명": "철근"
+      },
+      "measure_column": "당월재고",
+      "name": "long_products_rebar_inventory_month_end",
+      "description": "철근 당월재고",
+      "unit": "천톤"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "scrape": {
+    "recipe": "yfinance.history",
+    "params": {
+      "symbol": "HKDUSD=X",
+      "value_field": "hkd_usd_exchange_rate"
+    }
+  },
+  "datasource": {
+    "name": "yfinance",
+    "description": "Yahoo Finance"
+  },
+  "period_column": "date",
+  "period_format": "%Y-%m-%d",
+  "time_grain": "D",
+  "floor_date": "2001-07-01",
+  "category": {
+    "name": "exchange_rate",
+    "category_0": "market_macro",
+    "category_1": "fx",
+    "description": "환율"
+  },
+  "metrics": [
+    {
+      "match": {
+        "symbol": "HKDUSD=X"
+      },
+      "measure_column": "hkd_usd_exchange_rate",
+      "name": "fx_hkdusd_close",
+      "description": "HKD/USD 환율 (일별 종가)",
+      "unit": "USD/HKD"
+    }
+  ]
+}
